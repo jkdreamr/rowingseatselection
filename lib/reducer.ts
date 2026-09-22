@@ -23,7 +23,13 @@ export type Action =
   | { type: 'UPDATE_SESSION'; sessionId: string; patch: Partial<Session> }
   | { type: 'RENAME_GROUP'; groupId: string; label: string }
   | { type: 'SET_SESSION_PRIVATE_NOTES'; sessionId: string; coachId: string; notes: string }
-  | { type: 'SET_BOAT_PRIVATE_NOTES'; sessionId: string; boatId: string; coachId: string; notes: string }
+  | {
+      type: 'SET_BOAT_PRIVATE_NOTES';
+      sessionId: string;
+      boatId: string;
+      coachId: string;
+      notes: string;
+    }
   | { type: 'ADD_BOAT'; sessionId: string; boat: Boat }
   | { type: 'REMOVE_BOAT'; sessionId: string; boatId: string }
   | { type: 'RENAME_BOAT'; sessionId: string; boatId: string; name: string }

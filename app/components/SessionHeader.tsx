@@ -61,7 +61,8 @@ export function SessionHeader({
       });
     }
   };
-  const deleteLabel = variants.length > 1 ? `Delete ${session.variant}?` : `Delete ${session.label}?`;
+  const deleteLabel =
+    variants.length > 1 ? `Delete ${session.variant}?` : `Delete ${session.label}?`;
   return (
     <>
       <div className="card flex flex-wrap items-center justify-between gap-3 p-4">
@@ -70,7 +71,11 @@ export function SessionHeader({
             <input
               value={session.label}
               onChange={(event) =>
-                dispatch({ type: 'RENAME_GROUP', groupId: session.groupId, label: event.target.value })
+                dispatch({
+                  type: 'RENAME_GROUP',
+                  groupId: session.groupId,
+                  label: event.target.value,
+                })
               }
               className="focus-ring min-w-0 max-w-[230px] bg-transparent text-xl font-semibold tracking-tight"
             />
@@ -125,8 +130,8 @@ export function SessionHeader({
             )}
           </div>
           <p className="mt-1 text-xs text-ink-muted">
-            {mode === 'playground' ? 'Playground' : formatDate(session.date)} · {session.boats.length}{' '}
-            boats · {rowerCount} rowers seated
+            {mode === 'playground' ? 'Playground' : formatDate(session.date)} ·{' '}
+            {session.boats.length} boats · {rowerCount} rowers seated
           </p>
           {variants.length > 1 && (
             <a

@@ -1,10 +1,4 @@
-import {
-  createSeats,
-  type Boat,
-  type BoatClassId,
-  type Session,
-  type SessionKind,
-} from './types';
+import { createSeats, type Boat, type BoatClassId, type Session, type SessionKind } from './types';
 import { today } from './format';
 import { uid } from './ids';
 

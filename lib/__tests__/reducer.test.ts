@@ -230,7 +230,13 @@ describe('lineup reducer', () => {
   it('renames every variant in a group', () => {
     const first = session([boat('first')]);
     const second = { ...session([boat('second')]), id: 'second', variant: 'Lineup B' };
-    const initial = { ...data(), sessions: [{ ...first, groupId: 'group' }, { ...second, groupId: 'group' }] };
+    const initial = {
+      ...data(),
+      sessions: [
+        { ...first, groupId: 'group' },
+        { ...second, groupId: 'group' },
+      ],
+    };
     const next = reduce(initial, { type: 'RENAME_GROUP', groupId: 'group', label: 'PM' });
     expect(next.sessions.map((item) => item.label)).toEqual(['PM', 'PM']);
   });

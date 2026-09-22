@@ -48,8 +48,10 @@ export function normalizeImportedData(data: AppData): AppData {
     })),
     sessions: data.sessions.map((session) => ({
       ...session,
-      groupId: typeof session.groupId === 'string' && session.groupId ? session.groupId : session.id,
-      variant: typeof session.variant === 'string' && session.variant ? session.variant : 'Lineup A',
+      groupId:
+        typeof session.groupId === 'string' && session.groupId ? session.groupId : session.id,
+      variant:
+        typeof session.variant === 'string' && session.variant ? session.variant : 'Lineup A',
       kind: session.kind === 'playground' ? 'playground' : 'session',
       date: session.kind === 'playground' ? '' : (session.date ?? ''),
       notes: typeof session.notes === 'string' ? session.notes : '',

@@ -64,7 +64,9 @@ export function SessionSidebar({
                 )
               }
               className={`focus-ring w-full rounded-lg px-3 py-2 text-left ${
-                selected ? 'bg-cardinal-soft text-cardinal ring-1 ring-cardinal' : 'hover:bg-paper-alt'
+                selected
+                  ? 'bg-cardinal-soft text-cardinal ring-1 ring-cardinal'
+                  : 'hover:bg-paper-alt'
               }`}
             >
               <span className="block text-sm font-medium">{group.label}</span>

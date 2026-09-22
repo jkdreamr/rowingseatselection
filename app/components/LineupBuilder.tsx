@@ -54,7 +54,9 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
   );
   const grouped = useMemo(() => {
     const map = new Map<string, Session[]>();
-    visibleSessions.forEach((item) => map.set(item.groupId, [...(map.get(item.groupId) ?? []), item]));
+    visibleSessions.forEach((item) =>
+      map.set(item.groupId, [...(map.get(item.groupId) ?? []), item]),
+    );
     return Array.from(map, ([groupId, variants]) => ({
       groupId,
       label: variants[0].label,
@@ -141,7 +143,8 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     const previous = previousDate
       ? present.sessions.filter((item) => item.kind === 'session' && item.date === previousDate)
       : [];
-    const sourceGroup = previous[0] && previous.find((item) => item.groupId === previous[0].groupId);
+    const sourceGroup =
+      previous[0] && previous.find((item) => item.groupId === previous[0].groupId);
     if (!sourceGroup) {
       createLineup();
       return;
@@ -166,8 +169,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     setActiveDrag(undefined);
     const overId = String(event.over?.id ?? '');
     const activeData = event.active.data.current as
-      | { rowerId?: string; source?: SeatSource }
-      | undefined;
+      { rowerId?: string; source?: SeatSource } | undefined;
     if (!session || !overId) return;
     const overParts = overId.split('|');
     if (overParts[0] === 'boat' && event.active.id !== event.over?.id) {
@@ -293,10 +295,18 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
             {mode === 'playground' ? 'Playground' : 'Lineups'}
           </h1>
           <div className="flex items-center gap-2">
-            <button className="button-secondary px-3 py-2" onClick={() => dispatch({ type: 'UNDO' })} disabled={!canUndo}>
+            <button
+              className="button-secondary px-3 py-2"
+              onClick={() => dispatch({ type: 'UNDO' })}
+              disabled={!canUndo}
+            >
               Undo
             </button>
-            <button className="button-secondary px-3 py-2" onClick={() => dispatch({ type: 'REDO' })} disabled={!canRedo}>
+            <button
+              className="button-secondary px-3 py-2"
+              onClick={() => dispatch({ type: 'REDO' })}
+              disabled={!canRedo}
+            >
               Redo
             </button>
             {session && (
@@ -306,7 +316,11 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
             )}
             {copied && <span className="text-xs text-cardinal">Copied</span>}
             {session && (
-              <a className="button-secondary px-3 py-2" href={`/print/${session.id}`} target="_blank">
+              <a
+                className="button-secondary px-3 py-2"
+                href={`/print/${session.id}`}
+                target="_blank"
+              >
                 Print
               </a>
             )}
