@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useLineupStore } from '@/lib/store';
-import { downloadJson, validateImportedData } from '@/lib/storage';
+import { downloadJson, normalizeImportedData, validateImportedData } from '@/lib/storage';
 
 export default function SettingsPage() {
   const { present, loaded, dispatch } = useLineupStore();
@@ -46,7 +46,7 @@ export default function SettingsPage() {
                   const parsed: unknown = JSON.parse(await file.text());
                   if (!validateImportedData(parsed)) throw new Error('Invalid lineup file');
                   if (window.confirm('Replace all current roster and sessions?')) {
-                    dispatch({ type: 'INIT', data: parsed });
+                    dispatch({ type: 'INIT', data: normalizeImportedData(parsed) });
                     setMessage('Imported successfully.');
                   }
                 } catch {
