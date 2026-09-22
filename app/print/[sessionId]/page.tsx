@@ -36,9 +36,11 @@ export default function PrintPage() {
                   ({boat.classId} · {getBoatClass(boat.classId).label})
                 </span>
               </h2>
-              <span className="text-xs text-ink-muted print:text-black">
-                {boat.coxPosition} cox
-              </span>
+              {getBoatClass(boat.classId).coxed && (
+                <span className="text-xs text-ink-muted print:text-black">
+                  {boat.coxPosition} cox
+                </span>
+              )}
             </div>
             {boat.coxswainId && (
               <p className="border-b border-line py-2 text-sm print:border-black">

@@ -67,7 +67,12 @@ export default function SettingsPage() {
           <button
             className="button-secondary mt-4 px-4 py-2 text-cardinal"
             onClick={() => {
-              if (window.confirm('Clear all data? This cannot be undone.')) {
+              if (
+                window.confirm('Clear all data? This cannot be undone.') &&
+                window.confirm(
+                  'Really delete every rower and lineup? Export a backup first if unsure.',
+                )
+              ) {
                 dispatch({ type: 'INIT', data: { version: 1, rowers: [], sessions: [] } });
               }
             }}
