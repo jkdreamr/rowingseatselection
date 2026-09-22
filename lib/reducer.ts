@@ -90,16 +90,6 @@ function getSession(data: AppData, sessionId: string): Session | undefined {
   return data.sessions.find((session) => session.id === sessionId);
 }
 
-function findRowerLocation(data: AppData, sessionId: string, rowerId: string): SeatSource | null {
-  const session = getSession(data, sessionId);
-  for (const boat of session?.boats ?? []) {
-    const seat = boat.seats.find((item) => item.rowerId === rowerId);
-    if (seat) return { boatId: boat.id, seatNumber: seat.number };
-    if (boat.coxswainId === rowerId) return { boatId: boat.id, cox: true };
-  }
-  return null;
-}
-
 function isSeatSource(source: SeatSource): source is { boatId: string; seatNumber: number } {
   return 'seatNumber' in source;
 }
@@ -227,7 +217,7 @@ function reduceData(
         coxswainId: null,
       }));
     case 'ASSIGN_SEAT': {
-      const source = action.source ?? findRowerLocation(data, action.sessionId, action.rowerId);
+      const source = action.source ?? null;
       const targetBoat = getSession(data, action.sessionId)?.boats.find(
         (boat) => boat.id === action.boatId,
       );
@@ -309,7 +299,7 @@ function reduceData(
         };
       });
     case 'ASSIGN_COX': {
-      const source = action.source ?? findRowerLocation(data, action.sessionId, action.rowerId);
+      const source = action.source ?? null;
       const targetBoat = getSession(data, action.sessionId)?.boats.find(
         (boat) => boat.id === action.boatId,
       );
