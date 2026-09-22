@@ -82,8 +82,8 @@ export default function LineupBuilder() {
     return <main className="mx-auto max-w-[1600px] animate-pulse px-4 py-8"><div className="h-10 w-64 rounded bg-white/[.06]" /><div className="mt-8 h-[65vh] rounded-card bg-white/[.04]" /></main>;
   }
 
-  const createSession = (date = selectedDate) => {
-    const created = newSession(date, 'AM');
+  const createSession = (date = selectedDate, label = 'AM') => {
+    const created = newSession(date, label);
     dispatch({ type: 'CREATE_SESSION', session: created });
     setSelectedDate(date);
     setSelectedSessionId(created.id);
@@ -166,7 +166,7 @@ export default function LineupBuilder() {
           <aside className="card h-fit p-4">
             <div className="flex items-center justify-between">
               <span className="label-caps">Sessions</span>
-              <button className="focus-ring rounded-full bg-coral px-2.5 py-1 text-xs font-semibold" onClick={() => createSession()}>+ New</button>
+              <button className="focus-ring rounded-full bg-coral px-2.5 py-1 text-xs font-semibold" onClick={() => { const label = window.prompt('Session label', 'AM')?.trim(); if (label) createSession(selectedDate, label); }}>+ New</button>
             </div>
             <input type="date" value={selectedDate} onChange={(event) => { setSelectedDate(event.target.value); setSelectedSessionId(undefined); }} className="focus-ring mt-3 w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm" />
             <div className="mt-4 space-y-1">
@@ -180,7 +180,7 @@ export default function LineupBuilder() {
           </aside>
 
           <section className="min-w-0">
-            {session ? <SessionWorkspace session={session} present={present} dispatch={dispatch} menuBoatId={menuBoatId} setMenuBoatId={setMenuBoatId} picker={picker} setPicker={setPicker} pickerSearch={pickerSearch} setPickerSearch={setPickerSearch} /> : (
+            {session ? <SessionWorkspace session={session} present={present} dispatch={dispatch} onDelete={() => setSelectedSessionId(undefined)} menuBoatId={menuBoatId} setMenuBoatId={setMenuBoatId} picker={picker} setPicker={setPicker} pickerSearch={pickerSearch} setPickerSearch={setPickerSearch} /> : (
               <div className="card flex min-h-[520px] flex-col items-center justify-center p-8 text-center">
                 <div className="mb-4 text-5xl">🚣</div>
                 <h2 className="text-xl font-semibold">Start a session</h2>
@@ -199,10 +199,11 @@ export default function LineupBuilder() {
   );
 }
 
-function SessionWorkspace({ session, present, dispatch, menuBoatId, setMenuBoatId, picker, setPicker, pickerSearch, setPickerSearch }: {
+function SessionWorkspace({ session, present, dispatch, onDelete, menuBoatId, setMenuBoatId, picker, setPicker, pickerSearch, setPickerSearch }: {
   session: Session;
   present: ReturnType<typeof useLineupStore>['present'];
   dispatch: ReturnType<typeof useLineupStore>['dispatch'];
+  onDelete: () => void;
   menuBoatId?: string;
   setMenuBoatId: (value?: string) => void;
   picker?: { boatId: string; seatNumber: number };
@@ -223,6 +224,7 @@ function SessionWorkspace({ session, present, dispatch, menuBoatId, setMenuBoatI
         </div>
         <div className="flex gap-2">
           <button className="focus-ring rounded-full border border-white/10 px-3 py-2 text-xs hover:bg-white/[.06]" onClick={() => dispatch({ type: 'UPDATE_SESSION', sessionId: session.id, patch: { notes: session.notes ? '' : 'Coach notes: ' } })}>Session notes</button>
+          <button className="focus-ring rounded-full border border-red-300/20 px-3 py-2 text-xs text-red-200 hover:bg-red-400/10" onClick={() => { if (window.confirm(`Delete ${session.label}?`)) { dispatch({ type: 'DELETE_SESSION', sessionId: session.id }); onDelete(); } }}>Delete</button>
           <button className="focus-ring rounded-full bg-coral px-3 py-2 text-xs font-semibold" onClick={() => dispatch({ type: 'ADD_BOAT', sessionId: session.id, boat: newBoat(session.boats.length + 1) })}>+ Add boat</button>
         </div>
       </div>
