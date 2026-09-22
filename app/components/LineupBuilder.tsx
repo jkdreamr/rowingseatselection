@@ -389,7 +389,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
                   items={session.boats.map((boat) => `boat|${boat.id}`)}
                   strategy={verticalListSortingStrategy}
                 >
-                  <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(400px,1fr))]">
+                  <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(400px,100%),1fr))]">
                     {session.boats.map((boat) => (
                       <BoatCard
                         key={boat.id}

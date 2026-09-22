@@ -21,7 +21,7 @@ import {
 } from './storage';
 import { uid } from './ids';
 import { lineupReducer, type Action, type HistoryState } from './reducer';
-import type { Coach } from './types';
+import type { AppData, Coach } from './types';
 
 export { lineupReducer, type Action };
 
@@ -50,6 +50,7 @@ export function LineupStoreProvider({ children }: { children: React.ReactNode })
   const [clipboard, setClipboardState] = useState<LineupClipboard | null>(null);
   const adapter = useMemo(() => new LocalStorageAdapter(), []);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latest = useRef<AppData | null>(null);
 
   useEffect(() => {
     adapter.load().then((data) => {
@@ -64,12 +65,27 @@ export function LineupStoreProvider({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!loaded) return;
+    latest.current = state.present;
     if (saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(() => void adapter.save(state.present), 300);
-    return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current);
-    };
+    saveTimer.current = setTimeout(() => {
+      saveTimer.current = null;
+      void adapter.save(state.present);
+    }, 300);
   }, [adapter, loaded, state.present]);
+
+  useEffect(() => {
+    const flush = () => {
+      if (!saveTimer.current || !latest.current) return;
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+      void adapter.save(latest.current);
+    };
+    window.addEventListener('pagehide', flush);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      flush();
+    };
+  }, [adapter]);
 
   const setCoachName = useCallback((name: string) => {
     setCoach((current) => {
