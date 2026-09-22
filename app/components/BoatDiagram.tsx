@@ -78,7 +78,10 @@ export function BoatDiagram({
           <span className="text-red-300">← PORT</span>
           <span className="text-green-200">STARBOARD →</span>
         </div>
-        {boat.seats.slice().reverse().map((seat) => (
+        {classInfo.coxed && boat.coxPosition === 'bow' && (
+          <CoxDrop boat={boat} sessionId={sessionId} rower={boat.coxswainId ? rowerMap.get(boat.coxswainId) : undefined} />
+        )}
+        {boat.seats.map((seat) => (
           <SeatDrop
             key={seat.number}
             boat={boat}
@@ -90,7 +93,7 @@ export function BoatDiagram({
             onToggleSide={(side) => onToggleSide(seat.number, side)}
           />
         ))}
-        {classInfo.coxed && (
+        {classInfo.coxed && boat.coxPosition === 'stern' && (
           <CoxDrop boat={boat} sessionId={sessionId} rower={boat.coxswainId ? rowerMap.get(boat.coxswainId) : undefined} />
         )}
       </div>
