@@ -8,7 +8,6 @@ interface Props {
   rowers: Rower[];
   allRowers: Rower[];
   locations: Map<string, string>;
-  seatedIds: Set<string>;
   search: string;
   setSearch: (value: string) => void;
   groupFilter: string;
@@ -33,6 +32,7 @@ export function RosterPanel({
   onSample,
 }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: 'unassigned' });
+  const seatedCount = rowers.filter((rower) => locations.has(rower.id)).length;
   return (
     <aside className="card h-fit p-4 xl:sticky xl:top-[76px]">
       <div className="flex items-center justify-between">
@@ -68,9 +68,14 @@ export function RosterPanel({
           <option value="unavailable">Unavailable</option>
         </select>
       </div>
+      <p className="mt-2 text-[10px] text-ink-muted">
+        {seatedCount} seated · {rowers.length - seatedCount} unassigned
+      </p>
       <div
         ref={setNodeRef}
-        className={`mt-3 rounded-lg border border-dashed px-3 py-2 text-center text-[10px] text-ink-muted ${isOver ? 'border-cardinal bg-cardinal-soft' : 'border-line'}`}
+        className={`mt-3 rounded-lg border border-dashed px-3 py-2 text-center text-[10px] text-ink-muted ${
+          isOver ? 'border-cardinal bg-cardinal-soft' : 'border-line'
+        }`}
       >
         Drop here to unassign
       </div>
@@ -97,7 +102,12 @@ export function RosterPanel({
             <div key={group}>
               <p className="label-caps mb-1">{group}</p>
               {members.map((rower) => (
-                <RowerRow key={rower.id} rower={rower} location={locations.get(rower.id)} />
+                <RowerRow
+                  key={rower.id}
+                  rower={rower}
+                  seated={locations.has(rower.id)}
+                  location={locations.get(rower.id)}
+                />
               ))}
             </div>
           );

@@ -1,12 +1,14 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useLineupStore } from '@/lib/store';
 import { getBoatClass } from '@/lib/types';
 
 export default function PrintPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
-  const { present, loaded } = useLineupStore();
+  const { present, loaded, coach } = useLineupStore();
+  const searchParams = useSearchParams();
+  const includePrivate = searchParams.get('private') === '1';
   const session = present.sessions.find((item) => item.id === sessionId);
   if (!loaded) return <main className="p-8">Loading…</main>;
   if (!session) return <main className="p-8">Session not found.</main>;
@@ -69,12 +71,23 @@ export default function PrintPage() {
                 <strong>Notes:</strong> {boat.notes}
               </p>
             )}
+            {includePrivate && boat.privateNotes?.[coach.id] && (
+              <p className="mt-3 border-t border-line pt-3 text-xs">
+                <strong>Private notes ({coach.name || 'you'}):</strong>{' '}
+                {boat.privateNotes[coach.id]}
+              </p>
+            )}
           </section>
         ))}
       </div>
       {session.notes && (
         <p className="mt-6 text-sm">
           <strong>Session notes:</strong> {session.notes}
+        </p>
+      )}
+      {includePrivate && session.privateNotes?.[coach.id] && (
+        <p className="mt-6 text-sm">
+          <strong>Private notes ({coach.name || 'you'}):</strong> {session.privateNotes[coach.id]}
         </p>
       )}
       <style jsx global>{`
