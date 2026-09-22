@@ -21,6 +21,9 @@ export type Action =
   | { type: 'DUPLICATE_SESSION'; sourceSessionId: string; session: Session }
   | { type: 'DELETE_SESSION'; sessionId: string }
   | { type: 'UPDATE_SESSION'; sessionId: string; patch: Partial<Session> }
+  | { type: 'RENAME_GROUP'; groupId: string; label: string }
+  | { type: 'SET_SESSION_PRIVATE_NOTES'; sessionId: string; coachId: string; notes: string }
+  | { type: 'SET_BOAT_PRIVATE_NOTES'; sessionId: string; boatId: string; coachId: string; notes: string }
   | { type: 'ADD_BOAT'; sessionId: string; boat: Boat }
   | { type: 'REMOVE_BOAT'; sessionId: string; boatId: string }
   | { type: 'RENAME_BOAT'; sessionId: string; boatId: string; name: string }
@@ -118,6 +121,17 @@ function setCox(boat: Boat, rowerId: string | null): Boat {
   return { ...boat, coxswainId: rowerId };
 }
 
+function withPrivateNote(
+  existing: Record<string, string> | undefined,
+  coachId: string,
+  notes: string,
+): Record<string, string> | undefined {
+  const next = { ...(existing ?? {}) };
+  if (notes) next[coachId] = notes;
+  else delete next[coachId];
+  return Object.keys(next).length ? next : undefined;
+}
+
 function reduceData(
   data: AppData,
   action: Exclude<Action, { type: 'INIT' | 'UNDO' | 'REDO' }>,
@@ -162,6 +176,26 @@ function reduceData(
         ...session,
         ...action.patch,
         updatedAt: new Date().toISOString(),
+      }));
+    case 'RENAME_GROUP':
+      return {
+        ...data,
+        sessions: data.sessions.map((session) =>
+          session.groupId === action.groupId
+            ? { ...session, label: action.label, updatedAt: new Date().toISOString() }
+            : session,
+        ),
+      };
+    case 'SET_SESSION_PRIVATE_NOTES':
+      return updateSession(data, action.sessionId, (session) => ({
+        ...session,
+        privateNotes: withPrivateNote(session.privateNotes, action.coachId, action.notes),
+        updatedAt: new Date().toISOString(),
+      }));
+    case 'SET_BOAT_PRIVATE_NOTES':
+      return updateBoat(data, action.sessionId, action.boatId, (boat) => ({
+        ...boat,
+        privateNotes: withPrivateNote(boat.privateNotes, action.coachId, action.notes),
       }));
     case 'ADD_BOAT':
       return updateSession(data, action.sessionId, (session) => ({

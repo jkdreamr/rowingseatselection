@@ -1,6 +1,8 @@
-import type { AppData, Rower, Session } from './types';
+import type { AppData, Boat, Coach, Rower, Session } from './types';
 
 export const STORAGE_KEY = 'rowingseatselection:v1';
+export const COACH_KEY = 'rowingseatselection:coach';
+export const CLIPBOARD_KEY = 'rowingseatselection:clipboard';
 
 export interface StorageAdapter {
   load(): Promise<AppData>;
@@ -33,6 +35,10 @@ function isValidData(value: unknown): value is AppData {
   );
 }
 
+/**
+ * Fills in fields added after v1 shipped so older saves and imports load
+ * cleanly: binary rower status, and per-session `groupId`/`variant`/`kind`.
+ */
 export function normalizeImportedData(data: AppData): AppData {
   return {
     ...data,
@@ -40,7 +46,63 @@ export function normalizeImportedData(data: AppData): AppData {
       ...rower,
       status: rower.status === 'available' ? 'available' : 'unavailable',
     })),
+    sessions: data.sessions.map((session) => ({
+      ...session,
+      groupId: typeof session.groupId === 'string' && session.groupId ? session.groupId : session.id,
+      variant: typeof session.variant === 'string' && session.variant ? session.variant : 'Lineup A',
+      kind: session.kind === 'playground' ? 'playground' : 'session',
+      date: session.kind === 'playground' ? '' : (session.date ?? ''),
+      notes: typeof session.notes === 'string' ? session.notes : '',
+      boats: session.boats.map((boat) => ({
+        ...boat,
+        notes: typeof boat.notes === 'string' ? boat.notes : '',
+      })),
+    })),
   };
+}
+
+/** Copied lineup or boat, shared across tabs via localStorage. */
+export type LineupClipboard =
+  | { kind: 'session'; session: Session; copiedAt: string }
+  | { kind: 'boat'; boat: Boat; copiedAt: string };
+
+export function loadClipboard(): LineupClipboard | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(CLIPBOARD_KEY);
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    if (!isObject(parsed)) return null;
+    if (parsed.kind === 'session' && isObject(parsed.session)) return parsed as LineupClipboard;
+    if (parsed.kind === 'boat' && isObject(parsed.boat)) return parsed as LineupClipboard;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveClipboard(clipboard: LineupClipboard | null) {
+  if (typeof window === 'undefined') return;
+  if (clipboard) window.localStorage.setItem(CLIPBOARD_KEY, JSON.stringify(clipboard));
+  else window.localStorage.removeItem(CLIPBOARD_KEY);
+}
+
+export function loadCoach(): Coach | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(COACH_KEY);
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    return isObject(parsed) && typeof parsed.id === 'string' && typeof parsed.name === 'string'
+      ? { id: parsed.id, name: parsed.name }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveCoach(coach: Coach) {
+  if (typeof window !== 'undefined') window.localStorage.setItem(COACH_KEY, JSON.stringify(coach));
 }
 
 export class LocalStorageAdapter implements StorageAdapter {
