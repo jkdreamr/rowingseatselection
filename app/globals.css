@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  touch-action: pan-x pan-y;
+}
+
+body {
+  min-height: 100vh;
+  background: #0d1110;
+  color: #f3f1ea;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(40, 52, 47, 0.55), transparent 55%),
+    radial-gradient(80% 50% at 100% 0%, rgba(200, 32, 43, 0.1), transparent 50%),
+    #0d1110;
+}
+
+@layer components {
+  .card {
+    background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,0) 35%), #141a18;
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 20px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.03), 0 8px 24px rgba(0,0,0,.35);
+  }
+  .glass {
+    background: rgba(13,17,16,.8);
+    backdrop-filter: saturate(140%) blur(20px);
+  }
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-coral/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bone;
+  }
+  .label-caps {
+    @apply font-mono text-[10px] uppercase tracking-[.16em] text-charcoal-muted;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+
+@media print {
+  body { background: white !important; color: black !important; }
+  body::before { display: none; }
+}
