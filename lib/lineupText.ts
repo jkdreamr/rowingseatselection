@@ -3,7 +3,9 @@ import type { Boat, Rower, Session } from './types';
 
 export function sessionTitle(session: Session, variantCount = 1): string {
   const base =
-    session.kind === 'playground' ? session.label : `${formatDate(session.date)} — ${session.label}`;
+    session.kind === 'playground'
+      ? session.label
+      : `${formatDate(session.date)} — ${session.label}`;
   return variantCount > 1 ? `${base} (${session.variant})` : base;
 }
 

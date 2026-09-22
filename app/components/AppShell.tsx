@@ -20,13 +20,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <nav className="flex items-center gap-5 text-sm">
             {[
               ['/lineups', 'Lineups'],
+              ['/playground', 'Playground'],
+              ['/compare', 'Compare'],
               ['/roster', 'Roster'],
               ['/settings', 'Settings'],
             ].map(([href, label]) => (
               <Link
                 key={href}
                 href={href}
-                className={`focus-ring border-b-2 px-0.5 py-1 transition ${pathname === href ? 'border-cardinal text-cardinal' : 'border-transparent text-ink-soft hover:border-line-strong hover:text-ink'}`}
+                className={`focus-ring border-b-2 px-0.5 py-1 transition ${pathname.startsWith(href) ? 'border-cardinal text-cardinal' : 'border-transparent text-ink-soft hover:border-line-strong hover:text-ink'}`}
               >
                 {label}
               </Link>

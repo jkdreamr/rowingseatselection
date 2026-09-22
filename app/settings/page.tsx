@@ -5,7 +5,7 @@ import { useLineupStore } from '@/lib/store';
 import { downloadJson, normalizeImportedData, validateImportedData } from '@/lib/storage';
 
 export default function SettingsPage() {
-  const { present, loaded, dispatch } = useLineupStore();
+  const { present, loaded, dispatch, coach, setCoachName } = useLineupStore();
   const [message, setMessage] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   if (!loaded)
@@ -18,6 +18,20 @@ export default function SettingsPage() {
     <main className="mx-auto max-w-3xl px-4 pb-24 pt-6 sm:px-6">
       <h1 className="text-3xl font-semibold tracking-editorial">Settings</h1>
       <div className="mt-6 space-y-4">
+        <section className="card p-5">
+          <p className="label-caps">You</p>
+          <h2 className="mt-2 text-lg font-semibold">Coach name</h2>
+          <p className="mt-2 text-sm text-ink-soft">
+            Private notes are kept under this identity on this device. Shared sign-in comes later;
+            your private notes will move with you.
+          </p>
+          <input
+            value={coach.name}
+            onChange={(event) => setCoachName(event.target.value)}
+            placeholder="e.g. Coach Smith"
+            className="focus-ring mt-4 w-full max-w-sm border border-line px-3 py-2 text-sm"
+          />
+        </section>
         <section className="card p-5">
           <p className="label-caps">Data portability</p>
           <h2 className="mt-2 text-lg font-semibold">Your data stays in this browser</h2>
