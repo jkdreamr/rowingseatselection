@@ -1,6 +1,7 @@
 export type Side = 'port' | 'starboard';
 export type SidePreference = Side | 'both' | 'scull';
-export type RowerStatus = 'available' | 'injured' | 'sick' | 'away' | 'limited';
+export type RowerStatus = 'available' | 'unavailable';
+export type SeatSource = { boatId: string; seatNumber: number } | { boatId: string; cox: true };
 
 export interface Rower {
   id: string;
@@ -74,7 +75,7 @@ export const BOAT_CLASSES: BoatClass[] = [
   { id: '8x+', label: 'Octuple', seats: 8, coxed: true, sculling: true },
 ];
 
-export const ROWER_STATUSES: RowerStatus[] = ['available', 'injured', 'sick', 'away', 'limited'];
+export const ROWER_STATUSES: RowerStatus[] = ['available', 'unavailable'];
 
 export function getBoatClass(id: BoatClassId) {
   return BOAT_CLASSES.find((boatClass) => boatClass.id === id) ?? BOAT_CLASSES[0];

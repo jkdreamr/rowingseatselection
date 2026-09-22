@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html {
@@ -13,36 +13,44 @@ html {
 
 body {
   min-height: 100vh;
-  background: #0d1110;
-  color: #f3f1ea;
+  background: #ffffff;
+  color: #111111;
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 @layer components {
   .card {
-    background: #141a18;
-    border: 1px solid rgba(255,255,255,.07);
-    border-radius: 20px;
-    box-shadow: 0 1px 0 rgba(255,255,255,.03), 0 8px 24px rgba(0,0,0,.35);
-  }
-  .glass {
-    background: rgba(13,17,16,.8);
-    backdrop-filter: saturate(140%) blur(20px);
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
   }
   .focus-ring {
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-coral/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bone;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-cardinal/40 focus-visible:ring-offset-2 focus-visible:ring-offset-paper;
   }
   .label-caps {
-    @apply font-mono text-[10px] uppercase tracking-[.16em] text-charcoal-muted;
+    @apply font-mono text-[10px] uppercase tracking-[.16em] text-ink-muted;
+  }
+  .button-primary {
+    @apply focus-ring rounded-lg bg-cardinal text-sm font-medium text-white hover:bg-cardinal-dark disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .button-secondary {
+    @apply focus-ring rounded-lg border border-line bg-paper text-sm text-ink-soft hover:border-line-strong hover:text-ink disabled:cursor-not-allowed disabled:opacity-40;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }
 
 @media print {
-  body { background: white !important; color: black !important; }
-  body::before { display: none; }
+  body {
+    background: white !important;
+    color: black !important;
+  }
 }
