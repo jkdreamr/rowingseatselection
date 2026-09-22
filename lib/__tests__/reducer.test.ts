@@ -272,6 +272,18 @@ describe('lineup reducer', () => {
     expect(cloned.boats[0].privateNotes).toBeUndefined();
   });
 
+  it('clones a dated lineup into a playground group as a playground lineup', () => {
+    const cloned = cloneSession(session([boat('boat')]), {
+      kind: 'playground',
+      groupId: 'scratch',
+      variant: 'Lineup B',
+    });
+    expect(cloned.kind).toBe('playground');
+    expect(cloned.date).toBe('');
+    expect(cloned.groupId).toBe('scratch');
+    expect(cloned.boats).toHaveLength(1);
+  });
+
   it('supports undo and redo history', () => {
     const initial = data();
     const changed = lineupReducer(

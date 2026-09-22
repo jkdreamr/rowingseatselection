@@ -250,6 +250,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
   const pasteAlternative = () => {
     if (!session || !sessionGroup || clipboard?.kind !== 'session') return;
     const created = cloneSession(clipboard.session, {
+      kind: mode,
       groupId: session.groupId,
       variant: nextVariantName(sessionGroup.variants.map((item) => item.variant)),
       date: session.date,
