@@ -77,18 +77,20 @@ export function RosterPanel({
       <div className="mt-4 max-h-[60vh] space-y-3 overflow-y-auto pr-1">
         {['Coxswains', 'Port', 'Starboard', 'Both', 'Scull', 'Unavailable'].map((group) => {
           const members = rowers.filter((rower) =>
-            group === 'Coxswains'
-              ? rower.isCoxswain
-              : group === 'Unavailable'
-                ? rower.status === 'unavailable'
-                : !rower.isCoxswain &&
-                  (group === 'Port'
-                    ? rower.sidePreference === 'port'
-                    : group === 'Starboard'
-                      ? rower.sidePreference === 'starboard'
-                      : group === 'Both'
-                        ? rower.sidePreference === 'both'
-                        : rower.sidePreference === 'scull'),
+            group === 'Unavailable'
+              ? rower.status === 'unavailable'
+              : rower.status !== 'available'
+                ? false
+                : group === 'Coxswains'
+                  ? rower.isCoxswain
+                  : !rower.isCoxswain &&
+                    (group === 'Port'
+                      ? rower.sidePreference === 'port'
+                      : group === 'Starboard'
+                        ? rower.sidePreference === 'starboard'
+                        : group === 'Both'
+                          ? rower.sidePreference === 'both'
+                          : rower.sidePreference === 'scull'),
           );
           if (!members.length) return null;
           return (
