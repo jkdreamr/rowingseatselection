@@ -68,7 +68,7 @@ export default function PrintPage() {
             </ol>
             {boat.notes && (
               <p className="mt-3 text-xs">
-                <strong>Notes:</strong> {boat.notes}
+                <strong>Notes:</strong> <span className="whitespace-pre-wrap">{boat.notes}</span>
               </p>
             )}
             {includePrivate && boat.privateNotes?.[coach.id] && (
@@ -82,12 +82,14 @@ export default function PrintPage() {
       </div>
       {session.notes && (
         <p className="mt-6 text-sm">
-          <strong>Session notes:</strong> {session.notes}
+          <strong>Session notes:</strong>{' '}
+          <span className="whitespace-pre-wrap">{session.notes}</span>
         </p>
       )}
       {includePrivate && session.privateNotes?.[coach.id] && (
         <p className="mt-6 text-sm">
-          <strong>Private notes ({coach.name || 'you'}):</strong> {session.privateNotes[coach.id]}
+          <strong>Private notes ({coach.name || 'you'}):</strong>{' '}
+          <span className="whitespace-pre-wrap">{session.privateNotes[coach.id]}</span>
         </p>
       )}
       <style jsx global>{`

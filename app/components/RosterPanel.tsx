@@ -77,7 +77,7 @@ export function RosterPanel({
           isOver ? 'border-cardinal bg-cardinal-soft' : 'border-line'
         }`}
       >
-        Drop here to unassign
+        Drop here to unassign · or double-click a seated rower
       </div>
       <div className="mt-4 max-h-[60vh] space-y-3 overflow-y-auto pr-1">
         {['Coxswains', 'Port', 'Starboard', 'Both', 'Scull', 'Unavailable'].map((group) => {

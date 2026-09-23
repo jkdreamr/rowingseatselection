@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
 import { BoatDiagram } from './BoatDiagram';
 import { SeatPicker } from './SeatPicker';
+import { AutoTextarea } from './AutoTextarea';
 import { formatTwoK } from '@/lib/format';
 import { cloneBoat } from '@/lib/factories';
 import {
@@ -76,6 +77,15 @@ export function BoatCard({
       sessionId: session.id,
       boat: cloneBoat(boat, { withRowers: false, name: `${boat.name} copy` }),
     });
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onMouseDown = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, [menuOpen, setMenuOpen]);
   return (
     <article
       ref={setNodeRef}
@@ -114,7 +124,7 @@ export function BoatCard({
                 classId: event.target.value as BoatClassId,
               })
             }
-            className="focus-ring bg-transparent text-[10px] text-ink-muted"
+            className="focus-ring bg-transparent text-xs text-ink-muted"
           >
             {BOAT_CLASSES.map((option) => (
               <option key={option.id} value={option.id}>
@@ -123,7 +133,7 @@ export function BoatCard({
             ))}
           </select>
         </div>
-        <div className="relative">
+        <div ref={menuRef} className="relative">
           <button
             className="focus-ring grid h-8 w-8 place-items-center text-lg text-ink-muted hover:bg-paper-alt"
             onClick={() => setMenuOpen(!menuOpen)}
@@ -171,6 +181,7 @@ export function BoatCard({
                   Cox at {boat.coxPosition === 'stern' ? 'bow' : 'stern'}
                 </button>
               )}
+              <div className="my-1 border-t border-line" />
               <button
                 className="focus-ring block w-full rounded-lg px-3 py-2 text-left text-xs hover:bg-paper-alt"
                 onClick={() => {
@@ -180,6 +191,16 @@ export function BoatCard({
               >
                 Duplicate boat
               </button>
+              <button
+                className="focus-ring block w-full rounded-lg px-3 py-2 text-left text-xs hover:bg-paper-alt"
+                onClick={() => {
+                  onCopyBoat();
+                  setMenuOpen(false);
+                }}
+              >
+                Copy boat
+              </button>
+              <div className="my-1 border-t border-line" />
               <button
                 className="focus-ring block w-full rounded-lg px-3 py-2 text-left text-xs text-cardinal hover:bg-paper-alt"
                 onClick={() => {
@@ -197,15 +218,6 @@ export function BoatCard({
                 }}
               >
                 Delete boat
-              </button>
-              <button
-                className="focus-ring block w-full rounded-lg px-3 py-2 text-left text-xs hover:bg-paper-alt"
-                onClick={() => {
-                  onCopyBoat();
-                  setMenuOpen(false);
-                }}
-              >
-                Copy boat
               </button>
             </div>
           )}
@@ -244,6 +256,18 @@ export function BoatCard({
             seatNumber,
             side,
           })
+        }
+        onRemove={(source) =>
+          dispatch(
+            'cox' in source
+              ? { type: 'CLEAR_COX', sessionId: session.id, boatId: boat.id }
+              : {
+                  type: 'CLEAR_SEAT',
+                  sessionId: session.id,
+                  boatId: boat.id,
+                  seatNumber: source.seatNumber,
+                },
+          )
         }
       />
       {picker?.boatId === boat.id && (
@@ -310,7 +334,7 @@ function BoatNotes({
           </button>
         ))}
       </div>
-      <textarea
+      <AutoTextarea
         value={value}
         onChange={(event) =>
           dispatch(
@@ -330,7 +354,7 @@ function BoatNotes({
                 },
           )
         }
-        className="focus-ring min-h-10 w-full resize-y bg-transparent px-1 py-1 text-xs text-ink-soft"
+        className="focus-ring w-full bg-transparent px-1 py-1 text-xs text-ink-soft"
         placeholder={tab === 'private' ? 'Private notes (only you see these)' : 'Boat notes'}
       />
       {tab === 'private' && !coachName && (
