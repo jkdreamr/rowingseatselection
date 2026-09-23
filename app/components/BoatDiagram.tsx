@@ -213,11 +213,13 @@ function CoxGlyph({ y }: { y: number }) {
 
 function RowerChip({
   rower,
+  placed,
   source,
   warnings,
   onRemove,
 }: {
   rower: Rower;
+  placed: boolean;
   source: SeatSource;
   warnings: string[];
   onRemove: () => void;
@@ -240,7 +242,7 @@ function RowerChip({
       title={[rower.name, ...warnings, 'Double-click to remove'].join(' — ')}
       className={`focus-ring flex w-full min-w-0 cursor-grab items-center gap-1.5 rounded-md border bg-white px-2 text-left text-xs font-medium text-ink active:cursor-grabbing ${
         flagged ? 'border-cardinal' : 'border-ink'
-      } ${isDragging ? 'opacity-30' : ''}`}
+      } ${isDragging ? 'opacity-30' : ''} ${placed ? 'chip-placed' : ''}`}
       style={{ height: CHIP_H, transform: CSS.Translate.toString(transform) }}
     >
       {flagged && <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-cardinal" />}
@@ -293,6 +295,7 @@ export function BoatDiagram({
   duplicateIds,
   onEmptySeat,
   onToggleSide,
+  placedRowerId,
   onRemove,
 }: {
   sessionId: string;
@@ -301,6 +304,7 @@ export function BoatDiagram({
   duplicateIds?: Set<string>;
   onEmptySeat: (seatNumber: number) => void;
   onToggleSide: (seatNumber: number, side: Side) => void;
+  placedRowerId?: string;
   onRemove: (source: SeatSource) => void;
 }) {
   const { cls, cox, rowY, seatRow, coxRow, height } = layout(boat);
@@ -447,6 +451,7 @@ export function BoatDiagram({
               {rower ? (
                 <RowerChip
                   rower={rower}
+                  placed={rower.id === placedRowerId}
                   source={{ boatId: boat.id, seatNumber: seat.number }}
                   warnings={warningsFor(rower, seat.side)}
                   onRemove={() => onRemove({ boatId: boat.id, seatNumber: seat.number })}
@@ -462,6 +467,7 @@ export function BoatDiagram({
             id={`cox|${sessionId}|${boat.id}`}
             y={rowY(coxRow)}
             coxswain={coxswain}
+            placed={coxswain?.id === placedRowerId}
             warnings={coxswain ? warningsFor(coxswain, null) : []}
             boatId={boat.id}
             onRemove={() => onRemove({ boatId: boat.id, cox: true })}
@@ -476,6 +482,7 @@ function CoxSlot({
   id,
   y,
   coxswain,
+  placed,
   warnings,
   boatId,
   onRemove,
@@ -483,6 +490,7 @@ function CoxSlot({
   id: string;
   y: number;
   coxswain?: Rower;
+  placed: boolean;
   warnings: string[];
   boatId: string;
   onRemove: () => void;
@@ -498,6 +506,7 @@ function CoxSlot({
       {coxswain ? (
         <RowerChip
           rower={coxswain}
+          placed={placed}
           source={{ boatId, cox: true }}
           warnings={warnings}
           onRemove={onRemove}
