@@ -20,7 +20,6 @@ import { formatDate, today } from '@/lib/format';
 import { cloneBoat, cloneSession, newBoat, newSession, nextVariantName } from '@/lib/factories';
 import { uid } from '@/lib/ids';
 import { sessionToText } from '@/lib/lineupText';
-import { stanfordRoster } from '@/lib/storage';
 import type { Rower, SeatSource, Session } from '@/lib/types';
 
 interface Props {
@@ -34,7 +33,6 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
   const [selectedSessionId, setSelectedSessionId] = useState<string>();
   const [selectionHydrated, setSelectionHydrated] = useState(false);
   const [rosterSearch, setRosterSearch] = useState('');
-  const [groupFilter, setGroupFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [activeDrag, setActiveDrag] = useState<Rower>();
   const [picker, setPicker] = useState<{ boatId: string; seatNumber: number }>();
@@ -78,12 +76,6 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     });
     return result;
   }, [session]);
-  const rosterGroups = useMemo(
-    () =>
-      Array.from(new Set(present.rowers.map((rower) => rower.group).filter(Boolean))) as string[],
-    [present.rowers],
-  );
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
@@ -289,14 +281,8 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     window.setTimeout(() => setCopyFeedback(''), 1500);
   };
   const filteredRowers = present.rowers.filter((rower) => {
-    const searchMatch =
-      rower.name.toLowerCase().includes(rosterSearch.toLowerCase()) ||
-      rower.group?.toLowerCase().includes(rosterSearch.toLowerCase());
-    return (
-      searchMatch &&
-      (groupFilter === 'all' || rower.group === groupFilter) &&
-      (statusFilter === 'all' || rower.status === statusFilter)
-    );
+    const searchMatch = rower.name.toLowerCase().includes(rosterSearch.toLowerCase());
+    return searchMatch && (statusFilter === 'all' || rower.status === statusFilter);
   });
   const groups: SessionGroup[] = grouped;
 
@@ -460,14 +446,8 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
             locations={locations}
             search={rosterSearch}
             setSearch={setRosterSearch}
-            groupFilter={groupFilter}
-            setGroupFilter={setGroupFilter}
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
-            groups={rosterGroups}
-            onLoadRoster={() =>
-              stanfordRoster().forEach((rower) => dispatch({ type: 'ADD_ROWER', rower }))
-            }
           />
         </div>
       </main>

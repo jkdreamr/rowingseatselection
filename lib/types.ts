@@ -11,7 +11,6 @@ export interface Rower {
   canCox: boolean;
   weightLbs?: number;
   ergTwoKSeconds?: number;
-  group?: string;
   status: RowerStatus;
   notes?: string;
   createdAt: string;

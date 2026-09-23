@@ -10,12 +10,8 @@ interface Props {
   locations: Map<string, string>;
   search: string;
   setSearch: (value: string) => void;
-  groupFilter: string;
-  setGroupFilter: (value: string) => void;
   statusFilter: string;
   setStatusFilter: (value: string) => void;
-  groups: string[];
-  onLoadRoster: () => void;
 }
 
 export function RosterPanel({
@@ -24,12 +20,8 @@ export function RosterPanel({
   locations,
   search,
   setSearch,
-  groupFilter,
-  setGroupFilter,
   statusFilter,
   setStatusFilter,
-  groups,
-  onLoadRoster,
 }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: 'unassigned' });
   const seatedCount = rowers.filter((rower) => locations.has(rower.id)).length;
@@ -45,19 +37,7 @@ export function RosterPanel({
         className="focus-ring mt-3 w-full rounded-lg border border-line bg-paper px-3 py-2 text-sm"
         placeholder="Search rowers…"
       />
-      <div className="mt-2 grid grid-cols-2 gap-2">
-        <select
-          value={groupFilter}
-          onChange={(event) => setGroupFilter(event.target.value)}
-          className="focus-ring rounded-lg border border-line bg-paper px-2 py-2 text-[10px]"
-        >
-          <option value="all">All groups</option>
-          {groups.map((group) => (
-            <option key={group} value={group}>
-              {group}
-            </option>
-          ))}
-        </select>
+      <div className="mt-2">
         <select
           value={statusFilter}
           onChange={(event) => setStatusFilter(event.target.value)}
@@ -113,11 +93,6 @@ export function RosterPanel({
           );
         })}
       </div>
-      {!allRowers.length && (
-        <button className="button-primary mt-4 w-full px-3 py-2" onClick={onLoadRoster}>
-          Load Stanford roster
-        </button>
-      )}
     </aside>
   );
 }
