@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { lineupReducer, type Action } from '../store';
 import { createSeats, type AppData, type Boat, type Rower, type Session } from '../types';
 import { normalizeImportedData } from '../storage';
+import { cloneSession } from '../factories';
 
 const rower = (id: string): Rower => ({
   id,
@@ -26,6 +27,9 @@ const session = (boats: Boat[]): Session => ({
   id: 'session',
   date: '2025-01-01',
   label: 'AM',
+  groupId: 'session',
+  variant: 'Lineup A',
+  kind: 'session',
   boats,
   notes: '',
   createdAt: '',
@@ -221,6 +225,63 @@ describe('lineup reducer', () => {
   it('maps legacy imported availability statuses to unavailable', () => {
     const imported = { ...data(), rowers: [{ ...rower('legacy'), status: 'injured' as never }] };
     expect(normalizeImportedData(imported).rowers[0].status).toBe('unavailable');
+  });
+
+  it('renames every variant in a group', () => {
+    const first = session([boat('first')]);
+    const second = { ...session([boat('second')]), id: 'second', variant: 'Lineup B' };
+    const initial = {
+      ...data(),
+      sessions: [
+        { ...first, groupId: 'group' },
+        { ...second, groupId: 'group' },
+      ],
+    };
+    const next = reduce(initial, { type: 'RENAME_GROUP', groupId: 'group', label: 'PM' });
+    expect(next.sessions.map((item) => item.label)).toEqual(['PM', 'PM']);
+  });
+
+  it('sets and clears boat private notes', () => {
+    const initial = data();
+    const set = reduce(initial, {
+      type: 'SET_BOAT_PRIVATE_NOTES',
+      sessionId: 'session',
+      boatId: 'boat',
+      coachId: 'coach',
+      notes: 'Bring rigging cards',
+    });
+    expect(set.sessions[0].boats[0].privateNotes).toEqual({ coach: 'Bring rigging cards' });
+    const cleared = reduce(set, {
+      type: 'SET_BOAT_PRIVATE_NOTES',
+      sessionId: 'session',
+      boatId: 'boat',
+      coachId: 'coach',
+      notes: '',
+    });
+    expect(cleared.sessions[0].boats[0].privateNotes).toBeUndefined();
+  });
+
+  it('clones sessions with fresh ids and no private notes', () => {
+    const source = session([boat('boat')]);
+    source.privateNotes = { coach: 'private' };
+    source.boats[0].privateNotes = { coach: 'boat private' };
+    const cloned = cloneSession(source);
+    expect(cloned.id).not.toBe(source.id);
+    expect(cloned.boats[0].id).not.toBe(source.boats[0].id);
+    expect(cloned.privateNotes).toBeUndefined();
+    expect(cloned.boats[0].privateNotes).toBeUndefined();
+  });
+
+  it('clones a dated lineup into a playground group as a playground lineup', () => {
+    const cloned = cloneSession(session([boat('boat')]), {
+      kind: 'playground',
+      groupId: 'scratch',
+      variant: 'Lineup B',
+    });
+    expect(cloned.kind).toBe('playground');
+    expect(cloned.date).toBe('');
+    expect(cloned.groupId).toBe('scratch');
+    expect(cloned.boats).toHaveLength(1);
   });
 
   it('supports undo and redo history', () => {

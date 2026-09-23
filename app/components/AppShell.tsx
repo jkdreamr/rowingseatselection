@@ -12,21 +12,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <Link
             href="/lineups"
-            className="focus-ring flex items-center gap-2 text-sm font-semibold"
+            className="focus-ring flex shrink-0 items-center gap-2 text-sm font-semibold"
           >
             <span className="h-2.5 w-2.5 bg-cardinal" />
-            <span>Stanford Rowing · Lineups</span>
+            <span>
+              Stanford Rowing<span className="hidden sm:inline"> · Lineups</span>
+            </span>
           </Link>
-          <nav className="flex items-center gap-5 text-sm">
+          <nav className="flex flex-wrap items-center justify-end gap-x-4 gap-y-1 text-sm">
             {[
               ['/lineups', 'Lineups'],
+              ['/playground', 'Playground'],
+              ['/compare', 'Compare'],
               ['/roster', 'Roster'],
               ['/settings', 'Settings'],
             ].map(([href, label]) => (
               <Link
                 key={href}
                 href={href}
-                className={`focus-ring border-b-2 px-0.5 py-1 transition ${pathname === href ? 'border-cardinal text-cardinal' : 'border-transparent text-ink-soft hover:border-line-strong hover:text-ink'}`}
+                className={`focus-ring border-b-2 px-0.5 py-1 transition ${pathname.startsWith(href) ? 'border-cardinal text-cardinal' : 'border-transparent text-ink-soft hover:border-line-strong hover:text-ink'}`}
               >
                 {label}
               </Link>

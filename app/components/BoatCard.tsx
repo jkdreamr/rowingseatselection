@@ -1,11 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
 import { BoatDiagram } from './BoatDiagram';
 import { SeatPicker } from './SeatPicker';
 import { formatTwoK } from '@/lib/format';
-import { uid } from '@/lib/ids';
+import { cloneBoat } from '@/lib/factories';
 import {
   BOAT_CLASSES,
   getBoatClass,
@@ -27,6 +28,10 @@ interface Props {
   setPicker: (value?: { boatId: string; seatNumber: number }) => void;
   pickerSearch: string;
   setPickerSearch: (value: string) => void;
+  locations: Map<string, string>;
+  coachId: string;
+  coachName: string;
+  onCopyBoat: () => void;
 }
 
 export function BoatCard({
@@ -40,6 +45,10 @@ export function BoatCard({
   setPicker,
   pickerSearch,
   setPickerSearch,
+  locations,
+  coachId,
+  coachName,
+  onCopyBoat,
 }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `boat|${boat.id}`,
@@ -65,13 +74,7 @@ export function BoatCard({
     dispatch({
       type: 'ADD_BOAT',
       sessionId: session.id,
-      boat: {
-        ...structuredClone(boat),
-        id: uid('boat'),
-        name: `${boat.name} copy`,
-        coxswainId: null,
-        seats: boat.seats.map((seat) => ({ ...seat, rowerId: null })),
-      },
+      boat: cloneBoat(boat, { withRowers: false, name: `${boat.name} copy` }),
     });
   return (
     <article
@@ -195,6 +198,15 @@ export function BoatCard({
               >
                 Delete boat
               </button>
+              <button
+                className="focus-ring block w-full rounded-lg px-3 py-2 text-left text-xs hover:bg-paper-alt"
+                onClick={() => {
+                  onCopyBoat();
+                  setMenuOpen(false);
+                }}
+              >
+                Copy boat
+              </button>
             </div>
           )}
         </div>
@@ -237,6 +249,7 @@ export function BoatCard({
       {picker?.boatId === boat.id && (
         <SeatPicker
           rowers={rowers}
+          locations={locations}
           search={pickerSearch}
           setSearch={setPickerSearch}
           onPick={(rowerId) => {
@@ -252,19 +265,83 @@ export function BoatCard({
           onClose={() => setPicker(undefined)}
         />
       )}
-      <textarea
-        value={boat.notes}
-        onChange={(event) =>
-          dispatch({
-            type: 'SET_BOAT_NOTES',
-            sessionId: session.id,
-            boatId: boat.id,
-            notes: event.target.value,
-          })
-        }
-        className="focus-ring mt-2 min-h-10 w-full resize-y rounded-lg border border-line bg-paper px-2 py-2 text-xs text-ink-soft"
-        placeholder="Boat notes…"
+      <BoatNotes
+        boat={boat}
+        sessionId={session.id}
+        dispatch={dispatch}
+        coachId={coachId}
+        coachName={coachName}
       />
     </article>
+  );
+}
+
+function BoatNotes({
+  boat,
+  sessionId,
+  dispatch,
+  coachId,
+  coachName,
+}: {
+  boat: Boat;
+  sessionId: string;
+  dispatch: React.Dispatch<Action>;
+  coachId: string;
+  coachName: string;
+}) {
+  const [tab, setTab] = useState<'public' | 'private'>('public');
+  const privateNote = boat.privateNotes?.[coachId] ?? '';
+  const value = tab === 'public' ? boat.notes : privateNote;
+  return (
+    <div className="mt-2 rounded-lg border border-line p-2">
+      <div className="mb-2 flex gap-3">
+        {(['public', 'private'] as const).map((item) => (
+          <button
+            key={item}
+            className={`label-caps border-b-2 pb-1 ${
+              tab === item ? 'border-cardinal text-cardinal' : 'border-transparent'
+            }`}
+            onClick={() => setTab(item)}
+          >
+            {item === 'public' ? 'Public' : 'Private'}
+            {(item === 'public' ? boat.notes : privateNote) && (
+              <span className="ml-1 text-cardinal">•</span>
+            )}
+          </button>
+        ))}
+      </div>
+      <textarea
+        value={value}
+        onChange={(event) =>
+          dispatch(
+            tab === 'public'
+              ? {
+                  type: 'SET_BOAT_NOTES',
+                  sessionId,
+                  boatId: boat.id,
+                  notes: event.target.value,
+                }
+              : {
+                  type: 'SET_BOAT_PRIVATE_NOTES',
+                  sessionId,
+                  boatId: boat.id,
+                  coachId,
+                  notes: event.target.value,
+                },
+          )
+        }
+        className="focus-ring min-h-10 w-full resize-y bg-transparent px-1 py-1 text-xs text-ink-soft"
+        placeholder={tab === 'private' ? 'Private notes (only you see these)' : 'Boat notes'}
+      />
+      {tab === 'private' && !coachName && (
+        <p className="mt-1 text-[10px] text-ink-muted">
+          Set your name in{' '}
+          <a className="text-cardinal underline" href="/settings">
+            Settings
+          </a>{' '}
+          so other coaches can tell notes apart later.
+        </p>
+      )}
+    </div>
   );
 }

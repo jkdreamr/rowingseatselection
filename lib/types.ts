@@ -42,18 +42,38 @@ export interface Boat {
   coxswainId: string | null;
   coxPosition: 'stern' | 'bow';
   notes: string;
+  privateNotes?: PrivateNotes;
   color?: string;
 }
 
+/** Keyed by coach id; only the matching coach's entry is ever shown. */
+export type PrivateNotes = Record<string, string>;
+
+export type SessionKind = 'session' | 'playground';
+
+/**
+ * One lineup. Alternative lineups for the same practice share a `groupId`
+ * and are distinguished by `variant` ("Lineup A", "Lineup B"...).
+ * Playground lineups have `kind: 'playground'` and an empty `date`.
+ */
 export interface Session {
   id: string;
   date: string;
   label: string;
+  groupId: string;
+  variant: string;
+  kind: SessionKind;
   boats: Boat[];
   notes: string;
+  privateNotes?: PrivateNotes;
   unassignedNote?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Coach {
+  id: string;
+  name: string;
 }
 
 export interface AppData {
