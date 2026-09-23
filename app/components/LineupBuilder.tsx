@@ -122,6 +122,15 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     [],
   );
 
+  const markPlaced = (rowerId: string) => {
+    setPlacedRowerId(rowerId);
+    if (placedTimeoutRef.current) window.clearTimeout(placedTimeoutRef.current);
+    placedTimeoutRef.current = window.setTimeout(() => {
+      setPlacedRowerId(undefined);
+      placedTimeoutRef.current = undefined;
+    }, 400);
+  };
+
   if (!loaded || !selectionHydrated) {
     return (
       <main className="mx-auto max-w-[1600px] px-4 py-8">
@@ -226,12 +235,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
         rowerId: activeData.rowerId,
         source: activeData.source,
       });
-      setPlacedRowerId(activeData.rowerId);
-      if (placedTimeoutRef.current) window.clearTimeout(placedTimeoutRef.current);
-      placedTimeoutRef.current = window.setTimeout(() => {
-        setPlacedRowerId(undefined);
-        placedTimeoutRef.current = undefined;
-      }, 400);
+      markPlaced(activeData.rowerId);
     } else if (overParts[0] === 'cox') {
       dispatch({
         type: 'ASSIGN_COX',
@@ -240,12 +244,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
         rowerId: activeData.rowerId,
         source: activeData.source,
       });
-      setPlacedRowerId(activeData.rowerId);
-      if (placedTimeoutRef.current) window.clearTimeout(placedTimeoutRef.current);
-      placedTimeoutRef.current = window.setTimeout(() => {
-        setPlacedRowerId(undefined);
-        placedTimeoutRef.current = undefined;
-      }, 400);
+      markPlaced(activeData.rowerId);
     }
   };
   const pasteBoat = () => {
@@ -433,15 +432,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
                         pickerSearch={pickerSearch}
                         setPickerSearch={setPickerSearch}
                         placedRowerId={placedRowerId}
-                        onPlaced={(rowerId) => {
-                          setPlacedRowerId(rowerId);
-                          if (placedTimeoutRef.current)
-                            window.clearTimeout(placedTimeoutRef.current);
-                          placedTimeoutRef.current = window.setTimeout(() => {
-                            setPlacedRowerId(undefined);
-                            placedTimeoutRef.current = undefined;
-                          }, 400);
-                        }}
+                        onPlaced={markPlaced}
                         locations={locations}
                         coachId={coach.id}
                         coachName={coach.name}
