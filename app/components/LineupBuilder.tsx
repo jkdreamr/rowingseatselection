@@ -88,10 +88,8 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     if (typeof window === 'undefined') return;
     try {
       const saved = JSON.parse(localStorage.getItem(selectionKey) ?? '{}') as {
-        date?: string;
         sessionId?: string;
       };
-      if (mode === 'session' && saved.date) setSelectedDate(saved.date);
       if (saved.sessionId) setSelectedSessionId(saved.sessionId);
     } catch {
       // Ignore malformed local state and use the normal fallback selection.
@@ -101,10 +99,8 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
 
   useEffect(() => {
     if (!selectionHydrated || typeof window === 'undefined' || !selectedSessionId) return;
-    const saved: { date?: string; sessionId?: string } = { sessionId: selectedSessionId };
-    if (mode === 'session') saved.date = selectedDate;
-    localStorage.setItem(selectionKey, JSON.stringify(saved));
-  }, [mode, selectedDate, selectedSessionId, selectionHydrated, selectionKey]);
+    localStorage.setItem(selectionKey, JSON.stringify({ sessionId: selectedSessionId }));
+  }, [selectedSessionId, selectionHydrated, selectionKey]);
 
   useEffect(() => {
     if (session && session.id !== selectedSessionId) setSelectedSessionId(session.id);
