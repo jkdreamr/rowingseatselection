@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLineupStore } from '@/lib/store';
-import { parseTwoK, stanfordRoster } from '@/lib/storage';
+import { parseTwoK } from '@/lib/storage';
 import { formatTwoK } from '@/lib/format';
 import type { Rower, SidePreference } from '@/lib/types';
 
@@ -49,7 +49,7 @@ export default function RosterPage() {
       .split('\n')
       .map((line) => line.split(','))
       .filter((cells) => cells[0]?.trim())
-      .forEach(([name, side, weight, erg, group]) =>
+      .forEach(([name, side, weight, erg]) =>
         dispatch({
           type: 'ADD_ROWER',
           rower: {
@@ -62,7 +62,6 @@ export default function RosterPage() {
             canCox: false,
             weightLbs: Number(weight) || undefined,
             ergTwoKSeconds: erg ? parseTwoK(erg) : undefined,
-            group: group?.trim(),
             status: 'available',
             createdAt: now(),
             updatedAt: now(),
@@ -70,9 +69,6 @@ export default function RosterPage() {
         }),
       );
     setCsv('');
-  };
-  const loadStanfordRoster = () => {
-    stanfordRoster().forEach((rower) => dispatch({ type: 'ADD_ROWER', rower }));
   };
   return (
     <main className="mx-auto max-w-[1500px] px-4 pb-24 pt-6 sm:px-6">
@@ -103,7 +99,7 @@ export default function RosterPage() {
           </section>
           <section className="card p-4">
             <p className="label-caps">CSV import</p>
-            <p className="mt-2 text-xs text-ink-muted">name,side,weight,2k,group</p>
+            <p className="mt-2 text-xs text-ink-muted">name,side,weight,2k</p>
             <textarea
               value={csv}
               onChange={(event) => setCsv(event.target.value)}
@@ -141,7 +137,6 @@ export default function RosterPage() {
                   <th className="px-3 py-3">Cox</th>
                   <th className="px-3 py-3">Weight</th>
                   <th className="px-3 py-3">2k</th>
-                  <th className="px-3 py-3">Group</th>
                   <th className="px-3 py-3">Available</th>
                   <th className="px-3 py-3" />
                 </tr>
@@ -153,12 +148,7 @@ export default function RosterPage() {
               </tbody>
             </table>
             {!sorted.length && (
-              <div className="flex flex-col items-center gap-3 p-12 text-center">
-                <p className="text-sm text-ink-muted">No rowers yet.</p>
-                <button className="button-primary px-3 py-2" onClick={loadStanfordRoster}>
-                  Load Stanford roster
-                </button>
-              </div>
+              <p className="p-12 text-center text-sm text-ink-muted">No rowers yet.</p>
             )}
           </div>
         </section>
@@ -223,13 +213,6 @@ function RosterTableRow({
           onChange={(event) => cell({ ergTwoKSeconds: parseTwoK(event.target.value) })}
           className="focus-ring w-20 rounded bg-transparent px-1 py-1"
           placeholder="7:10.2"
-        />
-      </td>
-      <td className="px-3 py-2">
-        <input
-          value={rower.group ?? ''}
-          onChange={(event) => cell({ group: event.target.value })}
-          className="focus-ring w-24 rounded bg-transparent px-1 py-1"
         />
       </td>
       <td className="px-3 py-2">

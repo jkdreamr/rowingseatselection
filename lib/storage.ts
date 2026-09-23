@@ -43,10 +43,13 @@ function isValidData(value: unknown): value is AppData {
 export function normalizeImportedData(data: AppData): AppData {
   return {
     ...data,
-    rowers: data.rowers.map((rower) => ({
-      ...rower,
-      status: rower.status === 'available' ? 'available' : 'unavailable',
-    })),
+    rowers: data.rowers.map((rower) => {
+      const { group: _legacyGroup, ...withoutGroup } = rower as Rower & { group?: unknown };
+      return {
+        ...withoutGroup,
+        status: rower.status === 'available' ? 'available' : 'unavailable',
+      };
+    }),
     sessions: data.sessions.map((session) => ({
       ...session,
       groupId:
@@ -61,6 +64,30 @@ export function normalizeImportedData(data: AppData): AppData {
         notes: typeof boat.notes === 'string' ? boat.notes : '',
       })),
     })),
+  };
+}
+
+export function seedRoster(data: AppData): AppData {
+  const replacingSamples =
+    data.rowers.length > 0 && data.rowers.every((rower) => rower.id.startsWith('sample-'));
+  if (data.rowers.length > 0 && !replacingSamples) return data;
+
+  return {
+    ...data,
+    rowers: stanfordRoster(),
+    sessions: replacingSamples
+      ? data.sessions.map((session) => ({
+          ...session,
+          boats: session.boats.map((boat) => ({
+            ...boat,
+            seats: boat.seats.map((seat) => ({
+              ...seat,
+              rowerId: seat.rowerId?.startsWith('sample-') ? null : seat.rowerId,
+            })),
+            coxswainId: boat.coxswainId?.startsWith('sample-') ? null : boat.coxswainId,
+          })),
+        }))
+      : data.sessions,
   };
 }
 
@@ -113,9 +140,11 @@ export class LocalStorageAdapter implements StorageAdapter {
     if (typeof window === 'undefined') return emptyData();
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) return emptyData();
+      if (!raw) return seedRoster(emptyData());
       const parsed: unknown = JSON.parse(raw);
-      return isValidData(parsed) ? normalizeImportedData(parsed) : emptyData();
+      return isValidData(parsed)
+        ? seedRoster(normalizeImportedData(parsed))
+        : seedRoster(emptyData());
     } catch {
       return emptyData();
     }
@@ -197,7 +226,6 @@ export function stanfordRoster(): Rower[] {
     sidePreference: 'both' as const,
     isCoxswain,
     canCox: isCoxswain,
-    group: isCoxswain ? 'Coxswains' : 'Varsity',
     status: 'available' as const,
     notes: '',
     createdAt: now,

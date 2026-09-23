@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { lineupReducer, type Action } from '../store';
 import { createSeats, type AppData, type Boat, type Rower, type Session } from '../types';
-import { normalizeImportedData, stanfordRoster } from '../storage';
+import { normalizeImportedData, seedRoster, stanfordRoster } from '../storage';
 import { cloneSession } from '../factories';
 
 const rower = (id: string): Rower => ({
@@ -236,8 +236,34 @@ describe('lineup reducer', () => {
   });
 
   it('maps legacy imported availability statuses to unavailable', () => {
-    const imported = { ...data(), rowers: [{ ...rower('legacy'), status: 'injured' as never }] };
-    expect(normalizeImportedData(imported).rowers[0].status).toBe('unavailable');
+    const imported = {
+      ...data(),
+      rowers: [{ ...rower('legacy'), status: 'injured', group: 'Varsity' }],
+    } as never;
+    const normalized = normalizeImportedData(imported);
+    expect(normalized.rowers[0].status).toBe('unavailable');
+    expect('group' in normalized.rowers[0]).toBe(false);
+  });
+
+  it('seeds an empty roster with Stanford rowers', () => {
+    const seeded = seedRoster({ version: 1, rowers: [], sessions: [] });
+    expect(seeded.rowers).toHaveLength(39);
+  });
+
+  it('replaces sample rowers and clears their boat assignments', () => {
+    const initial = data();
+    initial.rowers = [rower('sample-rower-1'), rower('sample-cox-1')];
+    initial.sessions[0].boats[0].seats[0].rowerId = 'sample-rower-1';
+    initial.sessions[0].boats[0].coxswainId = 'sample-cox-1';
+    const seeded = seedRoster(initial);
+    expect(seeded.rowers).toHaveLength(39);
+    expect(seeded.sessions[0].boats[0].seats[0].rowerId).toBeNull();
+    expect(seeded.sessions[0].boats[0].coxswainId).toBeNull();
+  });
+
+  it('leaves a non-sample roster unchanged', () => {
+    const initial = data();
+    expect(seedRoster(initial)).toBe(initial);
   });
 
   it('renames every variant in a group', () => {
