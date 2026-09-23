@@ -2,7 +2,12 @@
 
 import { useRef, useState } from 'react';
 import { useLineupStore } from '@/lib/store';
-import { downloadJson, normalizeImportedData, validateImportedData } from '@/lib/storage';
+import {
+  downloadJson,
+  normalizeImportedData,
+  STANFORD_COACHES,
+  validateImportedData,
+} from '@/lib/storage';
 
 export default function SettingsPage() {
   const { present, loaded, dispatch, coach, setCoachName } = useLineupStore();
@@ -31,6 +36,19 @@ export default function SettingsPage() {
             placeholder="e.g. Coach Smith"
             className="focus-ring mt-4 w-full max-w-sm border border-line px-3 py-2 text-sm"
           />
+          <div className="mt-3 flex flex-wrap gap-2">
+            {STANFORD_COACHES.map((name) => (
+              <button
+                key={name}
+                className={`button-secondary px-2 py-1 text-xs ${
+                  coach.name === name ? 'border-cardinal text-cardinal' : ''
+                }`}
+                onClick={() => setCoachName(name)}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
         </section>
         <section className="card p-5">
           <p className="label-caps">Data portability</p>

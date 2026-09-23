@@ -20,7 +20,7 @@ import { formatDate, today } from '@/lib/format';
 import { cloneBoat, cloneSession, newBoat, newSession, nextVariantName } from '@/lib/factories';
 import { uid } from '@/lib/ids';
 import { sessionToText } from '@/lib/lineupText';
-import { sampleCoxswains, sampleRowers } from '@/lib/storage';
+import { stanfordRoster } from '@/lib/storage';
 import type { Rower, SeatSource, Session } from '@/lib/types';
 
 interface Props {
@@ -465,10 +465,8 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
             statusFilter={statusFilter}
             setStatusFilter={setStatusFilter}
             groups={rosterGroups}
-            onSample={() =>
-              sampleRowers()
-                .concat(sampleCoxswains())
-                .forEach((rower) => dispatch({ type: 'ADD_ROWER', rower }))
+            onLoadRoster={() =>
+              stanfordRoster().forEach((rower) => dispatch({ type: 'ADD_ROWER', rower }))
             }
           />
         </div>
