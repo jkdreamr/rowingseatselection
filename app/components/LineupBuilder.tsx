@@ -368,13 +368,15 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
                   }
                   onSelectVariant={(item) => setSelectedSessionId(item.id)}
                   onCreateAlternative={createAlternative}
-                  onCopyLineup={() =>
+                  onCopyLineup={() => {
                     setClipboard({
                       kind: 'session',
                       session: structuredClone(session),
                       copiedAt: new Date().toISOString(),
-                    })
-                  }
+                    });
+                    setCopyFeedback('Lineup copied — paste it on another day or as an alternative');
+                    window.setTimeout(() => setCopyFeedback(''), 2500);
+                  }}
                   onPasteAlternative={pasteAlternative}
                   onCopyToDay={copyToDay}
                   copyFeedback={copyFeedback}

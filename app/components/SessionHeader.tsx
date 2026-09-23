@@ -67,7 +67,7 @@ export function SessionHeader({
   const deleteLabel =
     variants.length > 1 ? `Delete ${session.variant}?` : `Delete ${session.label}?`;
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen && !showCopyToDay) return;
     const onMouseDown = (event: MouseEvent) => {
       if (!menuRef.current?.contains(event.target as Node)) {
         setMenuOpen(false);
@@ -86,7 +86,7 @@ export function SessionHeader({
       document.removeEventListener('mousedown', onMouseDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [menuOpen]);
+  }, [menuOpen, showCopyToDay]);
   return (
     <>
       <div className="card flex flex-wrap items-center justify-between gap-3 p-4">
