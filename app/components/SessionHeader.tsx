@@ -200,7 +200,7 @@ export function SessionHeader({
                     setMenuOpen(false);
                   }}
                 >
-                  Copy lineup
+                  Copy lineup (to paste elsewhere)
                 </button>
                 {mode === 'playground' && (
                   <button
@@ -257,7 +257,8 @@ export function SessionHeader({
       </div>
       {copyFeedback && <p className="text-xs text-cardinal">{copyFeedback}</p>}
       <div className="card p-3">
-        <div className="mb-2 flex gap-3">
+        <div className="mb-2 flex items-center gap-3">
+          <span className="label-caps text-ink-muted">Session notes</span>
           {(['public', 'private'] as const).map((tab) => (
             <button
               key={tab}

@@ -318,7 +318,8 @@ function BoatNotes({
   const value = tab === 'public' ? boat.notes : privateNote;
   return (
     <div className="mt-2 rounded-lg border border-line p-2">
-      <div className="mb-2 flex gap-3">
+      <div className="mb-2 flex items-center gap-3">
+        <span className="label-caps text-ink-muted">Boat notes</span>
         {(['public', 'private'] as const).map((item) => (
           <button
             key={item}

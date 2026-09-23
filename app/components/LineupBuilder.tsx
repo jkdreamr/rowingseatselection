@@ -32,6 +32,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     useLineupStore();
   const [selectedDate, setSelectedDate] = useState(today());
   const [selectedSessionId, setSelectedSessionId] = useState<string>();
+  const [selectionHydrated, setSelectionHydrated] = useState(false);
   const [rosterSearch, setRosterSearch] = useState('');
   const [groupFilter, setGroupFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -41,6 +42,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
   const [menuBoatId, setMenuBoatId] = useState<string>();
   const [copied, setCopied] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState('');
+  const selectionKey = `rowingseatselection:last:${mode}`;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
@@ -83,6 +85,28 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
   );
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(selectionKey) ?? '{}') as {
+        date?: string;
+        sessionId?: string;
+      };
+      if (mode === 'session' && saved.date) setSelectedDate(saved.date);
+      if (saved.sessionId) setSelectedSessionId(saved.sessionId);
+    } catch {
+      // Ignore malformed local state and use the normal fallback selection.
+    }
+    setSelectionHydrated(true);
+  }, [mode, selectionKey]);
+
+  useEffect(() => {
+    if (!selectionHydrated || typeof window === 'undefined' || !selectedSessionId) return;
+    const saved: { date?: string; sessionId?: string } = { sessionId: selectedSessionId };
+    if (mode === 'session') saved.date = selectedDate;
+    localStorage.setItem(selectionKey, JSON.stringify(saved));
+  }, [mode, selectedDate, selectedSessionId, selectionHydrated, selectionKey]);
+
+  useEffect(() => {
     if (session && session.id !== selectedSessionId) setSelectedSessionId(session.id);
   }, [selectedSessionId, session]);
 
@@ -101,7 +125,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [dispatch]);
 
-  if (!loaded) {
+  if (!loaded || !selectionHydrated) {
     return (
       <main className="mx-auto max-w-[1600px] px-4 py-8">
         <div className="h-10 w-64 animate-pulse rounded bg-paper-alt" />
