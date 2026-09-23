@@ -74,7 +74,7 @@ export default function PrintPage() {
             {includePrivate && boat.privateNotes?.[coach.id] && (
               <p className="mt-3 border-t border-line pt-3 text-xs">
                 <strong>Private notes ({coach.name || 'you'}):</strong>{' '}
-                {boat.privateNotes[coach.id]}
+                <span className="whitespace-pre-wrap">{boat.privateNotes[coach.id]}</span>
               </p>
             )}
           </section>
