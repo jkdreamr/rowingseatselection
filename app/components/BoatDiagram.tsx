@@ -215,10 +215,12 @@ function RowerChip({
   rower,
   source,
   warnings,
+  onRemove,
 }: {
   rower: Rower;
   source: SeatSource;
   warnings: string[];
+  onRemove: () => void;
 }) {
   const key = 'cox' in source ? 'cox' : source.seatNumber;
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -231,7 +233,11 @@ function RowerChip({
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      title={[rower.name, ...warnings].join(' — ')}
+      onDoubleClick={(event) => {
+        event.stopPropagation();
+        onRemove();
+      }}
+      title={[rower.name, ...warnings, 'Double-click to remove'].join(' — ')}
       className={`focus-ring flex w-full min-w-0 cursor-grab items-center gap-1.5 rounded-md border bg-white px-2 text-left text-xs font-medium text-ink active:cursor-grabbing ${
         flagged ? 'border-cardinal' : 'border-ink'
       } ${isDragging ? 'opacity-30' : ''}`}
@@ -287,6 +293,7 @@ export function BoatDiagram({
   duplicateIds,
   onEmptySeat,
   onToggleSide,
+  onRemove,
 }: {
   sessionId: string;
   boat: Boat;
@@ -294,6 +301,7 @@ export function BoatDiagram({
   duplicateIds?: Set<string>;
   onEmptySeat: (seatNumber: number) => void;
   onToggleSide: (seatNumber: number, side: Side) => void;
+  onRemove: (source: SeatSource) => void;
 }) {
   const { cls, cox, rowY, seatRow, coxRow, height } = layout(boat);
   const rowerMap = new Map(rowers.map((rower) => [rower.id, rower]));
@@ -441,6 +449,7 @@ export function BoatDiagram({
                   rower={rower}
                   source={{ boatId: boat.id, seatNumber: seat.number }}
                   warnings={warningsFor(rower, seat.side)}
+                  onRemove={() => onRemove({ boatId: boat.id, seatNumber: seat.number })}
                 />
               ) : (
                 <EmptyChip onClick={() => onEmptySeat(seat.number)} label={label} />
@@ -455,6 +464,7 @@ export function BoatDiagram({
             coxswain={coxswain}
             warnings={coxswain ? warningsFor(coxswain, null) : []}
             boatId={boat.id}
+            onRemove={() => onRemove({ boatId: boat.id, cox: true })}
           />
         )}
       </div>
@@ -468,12 +478,14 @@ function CoxSlot({
   coxswain,
   warnings,
   boatId,
+  onRemove,
 }: {
   id: string;
   y: number;
   coxswain?: Rower;
   warnings: string[];
   boatId: string;
+  onRemove: () => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
   const x = WIDTH - LABEL_W + RIGGER + CHIP_GAP;
@@ -484,7 +496,12 @@ function CoxSlot({
       className={`absolute flex items-center rounded-md transition ${isOver ? 'bg-cardinal-soft ring-1 ring-cardinal' : ''}`}
     >
       {coxswain ? (
-        <RowerChip rower={coxswain} source={{ boatId, cox: true }} warnings={warnings} />
+        <RowerChip
+          rower={coxswain}
+          source={{ boatId, cox: true }}
+          warnings={warnings}
+          onRemove={onRemove}
+        />
       ) : (
         <div
           style={{ height: CHIP_H }}

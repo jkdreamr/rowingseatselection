@@ -149,8 +149,9 @@ function CompareView() {
             onClick={copyAll}
             disabled={chosen.length === 0}
           >
-            {copied ? 'Copied' : 'Copy as text'}
+            Copy as text
           </button>
+          {copied && <span className="text-xs text-cardinal">Copied</span>}
           <button
             className="button-secondary px-3 py-1.5 text-sm"
             onClick={() => setSelected([])}

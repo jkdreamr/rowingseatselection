@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AutoTextarea } from './AutoTextarea';
 import { formatDate } from '@/lib/format';
 import type { LineupClipboard } from '@/lib/storage';
 import type { Action } from '@/lib/reducer';
@@ -47,6 +48,8 @@ export function SessionHeader({
   const [copyDate, setCopyDate] = useState(new Date().toISOString().slice(0, 10));
   const [copyLabel, setCopyLabel] = useState(session.label);
   const [showCopyToDay, setShowCopyToDay] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const privateNote = session.privateNotes?.[coach.id] ?? '';
   const [notesTab, setNotesTab] = useState<'public' | 'private'>('public');
   const updateNotes = (notes: string) => {
@@ -63,6 +66,27 @@ export function SessionHeader({
   };
   const deleteLabel =
     variants.length > 1 ? `Delete ${session.variant}?` : `Delete ${session.label}?`;
+  useEffect(() => {
+    if (!menuOpen && !showCopyToDay) return;
+    const onMouseDown = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setMenuOpen(false);
+        setShowCopyToDay(false);
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMenuOpen(false);
+        setShowCopyToDay(false);
+      }
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [menuOpen, showCopyToDay]);
   return (
     <>
       <div className="card flex flex-wrap items-center justify-between gap-3 p-4">
@@ -116,7 +140,7 @@ export function SessionHeader({
                   </span>
                 ))}
                 <button
-                  className="button-secondary border-0 px-2 py-1 text-xs"
+                  className="px-2 py-1 text-xs text-ink-muted hover:text-cardinal"
                   onClick={onCreateAlternative}
                 >
                   +
@@ -124,7 +148,10 @@ export function SessionHeader({
               </div>
             )}
             {variants.length === 1 && (
-              <button className="button-secondary px-2 py-1 text-xs" onClick={onCreateAlternative}>
+              <button
+                className="px-2 py-1 text-xs text-ink-muted hover:text-cardinal"
+                onClick={onCreateAlternative}
+              >
                 + Alternative lineup
               </button>
             )}
@@ -142,76 +169,96 @@ export function SessionHeader({
             </a>
           )}
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button className="button-secondary px-3 py-2" onClick={onCopyLineup}>
-            Copy lineup
+        <div className="flex flex-wrap items-center gap-2">
+          <button className="button-primary px-3 py-2" onClick={onAddBoat}>
+            + Add boat
           </button>
           {clipboard?.kind === 'session' && (
             <button className="button-secondary px-3 py-2" onClick={onPasteAlternative}>
               Paste as alternative
             </button>
           )}
-          {mode === 'playground' && (
-            <div className="relative">
-              <button
-                className="button-secondary px-3 py-2"
-                onClick={() => {
-                  setCopyLabel(session.label);
-                  setShowCopyToDay(!showCopyToDay);
-                }}
-              >
-                Copy to a day…
-              </button>
-              {showCopyToDay && (
-                <div className="absolute right-0 top-11 z-30 w-64 rounded-lg border border-line bg-paper p-3">
-                  <input
-                    type="date"
-                    value={copyDate}
-                    onChange={(event) => setCopyDate(event.target.value)}
-                    className="focus-ring w-full rounded-lg border border-line px-2 py-1 text-xs"
-                  />
-                  <input
-                    value={copyLabel}
-                    onChange={(event) => setCopyLabel(event.target.value)}
-                    className="focus-ring mt-2 w-full rounded-lg border border-line px-2 py-1 text-xs"
-                  />
-                  <button
-                    className="button-primary mt-2 w-full px-3 py-2 text-xs"
-                    onClick={() => {
-                      onCopyToDay(copyDate, copyLabel);
-                      setShowCopyToDay(false);
-                    }}
-                  >
-                    Copy
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
           {pasteBoat && clipboard?.kind === 'boat' && (
             <button className="button-secondary px-3 py-2" onClick={pasteBoat}>
               Paste boat
             </button>
           )}
-          <button
-            className="button-secondary px-3 py-2"
-            onClick={() => {
-              if (window.confirm(deleteLabel)) {
-                dispatch({ type: 'DELETE_SESSION', sessionId: session.id });
-                onDelete();
-              }
-            }}
-          >
-            Delete
-          </button>
-          <button className="button-primary px-3 py-2" onClick={onAddBoat}>
-            + Add boat
-          </button>
+          <div ref={menuRef} className="relative">
+            <button
+              className="focus-ring grid h-8 w-8 place-items-center text-lg text-ink-muted hover:bg-paper-alt"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Lineup actions"
+            >
+              ⋯
+            </button>
+            {menuOpen && (
+              <div className="absolute right-0 top-9 z-20 w-52 rounded-lg border border-line bg-paper p-1">
+                <button
+                  className="focus-ring block w-full rounded-lg px-3 py-2 text-left text-xs hover:bg-paper-alt"
+                  onClick={() => {
+                    onCopyLineup();
+                    setMenuOpen(false);
+                  }}
+                >
+                  Copy lineup
+                </button>
+                {mode === 'playground' && (
+                  <button
+                    className="focus-ring block w-full rounded-lg px-3 py-2 text-left text-xs hover:bg-paper-alt"
+                    onClick={() => {
+                      setCopyLabel(session.label);
+                      setShowCopyToDay(true);
+                      setMenuOpen(false);
+                    }}
+                  >
+                    Copy to a day…
+                  </button>
+                )}
+                <button
+                  className="focus-ring block w-full rounded-lg px-3 py-2 text-left text-xs text-cardinal hover:bg-paper-alt"
+                  onClick={() => {
+                    if (window.confirm(deleteLabel)) {
+                      dispatch({ type: 'DELETE_SESSION', sessionId: session.id });
+                      onDelete();
+                    }
+                    setMenuOpen(false);
+                  }}
+                >
+                  Delete lineup
+                </button>
+              </div>
+            )}
+            {showCopyToDay && mode === 'playground' && (
+              <div className="absolute right-0 top-9 z-30 w-64 rounded-lg border border-line bg-paper p-3">
+                <input
+                  type="date"
+                  value={copyDate}
+                  onChange={(event) => setCopyDate(event.target.value)}
+                  className="focus-ring w-full rounded-lg border border-line px-2 py-1 text-xs"
+                />
+                <input
+                  value={copyLabel}
+                  onChange={(event) => setCopyLabel(event.target.value)}
+                  className="focus-ring mt-2 w-full rounded-lg border border-line px-2 py-1 text-xs"
+                />
+                <button
+                  className="button-primary mt-2 w-full px-3 py-2 text-xs"
+                  onClick={() => {
+                    onCopyToDay(copyDate, copyLabel);
+                    setShowCopyToDay(false);
+                  }}
+                >
+                  Copy
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       {copyFeedback && <p className="text-xs text-cardinal">{copyFeedback}</p>}
       <div className="card p-3">
-        <div className="mb-2 flex gap-3">
+        <div className="mb-2 flex items-center gap-3">
+          <span className="label-caps text-ink-muted">Session notes</span>
           {(['public', 'private'] as const).map((tab) => (
             <button
               key={tab}
@@ -227,11 +274,10 @@ export function SessionHeader({
             </button>
           ))}
         </div>
-        <textarea
+        <AutoTextarea
           value={notesTab === 'public' ? session.notes : privateNote}
           onChange={(event) => updateNotes(event.target.value)}
-          rows={1}
-          className="focus-ring w-full resize-none bg-transparent text-sm"
+          className="focus-ring w-full bg-transparent text-sm"
           placeholder={
             notesTab === 'private' ? 'Private notes (only you see these)' : 'Session notes'
           }

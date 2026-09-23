@@ -32,6 +32,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     useLineupStore();
   const [selectedDate, setSelectedDate] = useState(today());
   const [selectedSessionId, setSelectedSessionId] = useState<string>();
+  const [selectionHydrated, setSelectionHydrated] = useState(false);
   const [rosterSearch, setRosterSearch] = useState('');
   const [groupFilter, setGroupFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -41,6 +42,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
   const [menuBoatId, setMenuBoatId] = useState<string>();
   const [copied, setCopied] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState('');
+  const selectionKey = `rowingseatselection:last:${mode}`;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
@@ -83,6 +85,24 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
   );
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(selectionKey) ?? '{}') as {
+        sessionId?: string;
+      };
+      if (saved.sessionId) setSelectedSessionId(saved.sessionId);
+    } catch {
+      // Ignore malformed local state and use the normal fallback selection.
+    }
+    setSelectionHydrated(true);
+  }, [mode, selectionKey]);
+
+  useEffect(() => {
+    if (!selectionHydrated || typeof window === 'undefined' || !selectedSessionId) return;
+    localStorage.setItem(selectionKey, JSON.stringify({ sessionId: selectedSessionId }));
+  }, [selectedSessionId, selectionHydrated, selectionKey]);
+
+  useEffect(() => {
     if (session && session.id !== selectedSessionId) setSelectedSessionId(session.id);
   }, [selectedSessionId, session]);
 
@@ -101,7 +121,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     return () => window.removeEventListener('keydown', onKey);
   }, [dispatch]);
 
-  if (!loaded) {
+  if (!loaded || !selectionHydrated) {
     return (
       <main className="mx-auto max-w-[1600px] px-4 py-8">
         <div className="h-10 w-64 animate-pulse rounded bg-paper-alt" />
@@ -368,13 +388,15 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
                   }
                   onSelectVariant={(item) => setSelectedSessionId(item.id)}
                   onCreateAlternative={createAlternative}
-                  onCopyLineup={() =>
+                  onCopyLineup={() => {
                     setClipboard({
                       kind: 'session',
                       session: structuredClone(session),
                       copiedAt: new Date().toISOString(),
-                    })
-                  }
+                    });
+                    setCopyFeedback('Lineup copied — paste it on another day or as an alternative');
+                    window.setTimeout(() => setCopyFeedback(''), 2500);
+                  }}
                   onPasteAlternative={pasteAlternative}
                   onCopyToDay={copyToDay}
                   copyFeedback={copyFeedback}

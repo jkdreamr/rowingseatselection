@@ -261,6 +261,29 @@ describe('lineup reducer', () => {
     expect(cleared.sessions[0].boats[0].privateNotes).toBeUndefined();
   });
 
+  it('clears a seat', () => {
+    const initial = data();
+    initial.sessions[0].boats[0].seats[0].rowerId = 'a';
+    const next = reduce(initial, {
+      type: 'CLEAR_SEAT',
+      sessionId: 'session',
+      boatId: 'boat',
+      seatNumber: 1,
+    });
+    expect(next.sessions[0].boats[0].seats[0].rowerId).toBeNull();
+  });
+
+  it('clears the cox', () => {
+    const initial = data([boat('boat', '4+')]);
+    initial.sessions[0].boats[0].coxswainId = 'a';
+    const next = reduce(initial, {
+      type: 'CLEAR_COX',
+      sessionId: 'session',
+      boatId: 'boat',
+    });
+    expect(next.sessions[0].boats[0].coxswainId).toBeNull();
+  });
+
   it('clones sessions with fresh ids and no private notes', () => {
     const source = session([boat('boat')]);
     source.privateNotes = { coach: 'private' };
