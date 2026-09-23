@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLineupStore } from '@/lib/store';
-import { parseTwoK } from '@/lib/storage';
+import { parseTwoK, stanfordRoster } from '@/lib/storage';
 import { formatTwoK } from '@/lib/format';
 import type { Rower, SidePreference } from '@/lib/types';
 
@@ -70,6 +70,9 @@ export default function RosterPage() {
         }),
       );
     setCsv('');
+  };
+  const loadStanfordRoster = () => {
+    stanfordRoster().forEach((rower) => dispatch({ type: 'ADD_ROWER', rower }));
   };
   return (
     <main className="mx-auto max-w-[1500px] px-4 pb-24 pt-6 sm:px-6">
@@ -150,7 +153,12 @@ export default function RosterPage() {
               </tbody>
             </table>
             {!sorted.length && (
-              <p className="p-12 text-center text-sm text-ink-muted">No rowers yet.</p>
+              <div className="flex flex-col items-center gap-3 p-12 text-center">
+                <p className="text-sm text-ink-muted">No rowers yet.</p>
+                <button className="button-primary px-3 py-2" onClick={loadStanfordRoster}>
+                  Load Stanford roster
+                </button>
+              </div>
             )}
           </div>
         </section>

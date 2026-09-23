@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { lineupReducer, type Action } from '../store';
 import { createSeats, type AppData, type Boat, type Rower, type Session } from '../types';
-import { normalizeImportedData } from '../storage';
+import { normalizeImportedData, stanfordRoster } from '../storage';
 import { cloneSession } from '../factories';
 
 const rower = (id: string): Rower => ({
@@ -44,6 +44,19 @@ const reduce = (value: AppData, action: Action) =>
   lineupReducer({ present: value, past: [], future: [] }, action).present;
 
 describe('lineup reducer', () => {
+  it('provides the Stanford roster with four coxswains and no performance stats', () => {
+    const roster = stanfordRoster();
+    expect(roster).toHaveLength(39);
+    expect(roster.filter((item) => item.isCoxswain).map((item) => item.name)).toEqual([
+      'Kannan Alford',
+      'Ginger Bernstein',
+      'Josh Koo',
+      'Gabrielle Zammit',
+    ]);
+    expect(roster.every((item) => item.weightLbs === undefined)).toBe(true);
+    expect(roster.every((item) => item.ergTwoKSeconds === undefined)).toBe(true);
+  });
+
   it('moves a rower out of their previous seat when assigning', () => {
     const initial = data();
     initial.sessions[0].boats[0].seats[0].rowerId = 'a';

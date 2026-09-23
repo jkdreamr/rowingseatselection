@@ -3,6 +3,7 @@ import type { AppData, Boat, Coach, Rower, Session } from './types';
 export const STORAGE_KEY = 'rowingseatselection:v1';
 export const COACH_KEY = 'rowingseatselection:coach';
 export const CLIPBOARD_KEY = 'rowingseatselection:clipboard';
+export const STANFORD_COACHES = ['Ted Sobolewski', 'Niles Garratt', 'John Pojednic'] as const;
 
 export interface StorageAdapter {
   load(): Promise<AppData>;
@@ -147,51 +148,56 @@ export function downloadJson(data: AppData, filename = exportFileName()) {
   URL.revokeObjectURL(url);
 }
 
-export function sampleRowers(): Rower[] {
+export function stanfordRoster(): Rower[] {
   const names = [
-    ['Maya Chen', 'port', 'Varsity'],
-    ['Sofia Martinez', 'starboard', 'Varsity'],
-    ['Avery Brooks', 'both', 'Varsity'],
-    ['Jordan Kim', 'port', 'Varsity'],
-    ['Riley Thompson', 'starboard', 'Varsity'],
-    ['Nora Patel', 'both', 'Varsity'],
-    ['Quinn Davis', 'port', 'Novice'],
-    ['Elena Rossi', 'starboard', 'Novice'],
-    ['Grace Lee', 'scull', 'Lightweight'],
-    ['Sam Wilson', 'both', 'Lightweight'],
-    ['Taylor Nguyen', 'port', 'Novice'],
-    ['Casey Brown', 'starboard', 'Novice'],
-    ['Jamie Smith', 'both', 'Varsity'],
-    ['Morgan Reed', 'port', 'Varsity'],
-    ['Cameron Diaz', 'starboard', 'Novice'],
-    ['Parker Jones', 'scull', 'Novice'],
+    ['Kannan Alford', true],
+    ['Marcus Albrecht', false],
+    ['Zander Auth', false],
+    ['Ginger Bernstein', true],
+    ['Callen Berwick', false],
+    ['Barron Celli', false],
+    ['Tom Corbett', false],
+    ['Elliott Donovan-Davies', false],
+    ['Braun Endicott', false],
+    ['Maxim Ericson', false],
+    ['Augie Freijo', false],
+    ['Jack Frye', false],
+    ['Gabe George', false],
+    ['Jack Griffin', false],
+    ['Leo Hainlein', false],
+    ['Ferdi Hainlein', false],
+    ['Matteo Hanna-Amodio', false],
+    ['Hylton Harvey', false],
+    ['Theo Herzog', false],
+    ['Josh Koo', true],
+    ['Finn Lorgen', false],
+    ['Tony Madigan', false],
+    ['Chris Muehl', false],
+    ['Tyler Murphy', false],
+    ['Andrew Orio', false],
+    ['Tom Pakulis', false],
+    ['George Petrow', false],
+    ['John Piersma', false],
+    ['Dom Pucinelli', false],
+    ['Kalen Routley', false],
+    ['John Salvi', false],
+    ['Sandro Scalfi', false],
+    ['Raph Skottowe', false],
+    ['Luke Smith', false],
+    ['Danny Stephenson', false],
+    ['Ody Tubidis', false],
+    ['Charlie Vachris', false],
+    ['Philip Wolfensberger', false],
+    ['Gabrielle Zammit', true],
   ] as const;
   const now = new Date().toISOString();
-  return names.map(([name, sidePreference, group], index) => ({
-    id: `sample-rower-${index + 1}`,
-    name,
-    sidePreference,
-    isCoxswain: false,
-    canCox: false,
-    weightLbs: 135 + (index % 7) * 4,
-    ergTwoKSeconds: 420 + (index % 6) * 5,
-    group,
-    status: 'available',
-    notes: '',
-    createdAt: now,
-    updatedAt: now,
-  }));
-}
-
-export function sampleCoxswains(): Rower[] {
-  const now = new Date().toISOString();
-  return ['Alex Morgan', 'Chris Taylor'].map((name, index) => ({
-    id: `sample-cox-${index + 1}`,
+  return names.map(([name, isCoxswain], index) => ({
+    id: `stanford-rower-${index + 1}`,
     name,
     sidePreference: 'both' as const,
-    isCoxswain: true,
-    canCox: true,
-    group: 'Coxswains',
+    isCoxswain,
+    canCox: isCoxswain,
+    group: isCoxswain ? 'Coxswains' : 'Varsity',
     status: 'available' as const,
     notes: '',
     createdAt: now,

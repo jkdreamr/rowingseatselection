@@ -15,7 +15,7 @@ interface Props {
   statusFilter: string;
   setStatusFilter: (value: string) => void;
   groups: string[];
-  onSample: () => void;
+  onLoadRoster: () => void;
 }
 
 export function RosterPanel({
@@ -29,7 +29,7 @@ export function RosterPanel({
   statusFilter,
   setStatusFilter,
   groups,
-  onSample,
+  onLoadRoster,
 }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: 'unassigned' });
   const seatedCount = rowers.filter((rower) => locations.has(rower.id)).length;
@@ -114,8 +114,8 @@ export function RosterPanel({
         })}
       </div>
       {!allRowers.length && (
-        <button className="button-primary mt-4 w-full px-3 py-2" onClick={onSample}>
-          Load sample roster
+        <button className="button-primary mt-4 w-full px-3 py-2" onClick={onLoadRoster}>
+          Load Stanford roster
         </button>
       )}
     </aside>
