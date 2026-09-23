@@ -200,7 +200,7 @@ export function SessionHeader({
                     setMenuOpen(false);
                   }}
                 >
-                  Copy lineup (to paste elsewhere)
+                  Copy lineup
                 </button>
                 {mode === 'playground' && (
                   <button
