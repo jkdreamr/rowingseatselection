@@ -29,6 +29,8 @@ interface Props {
   setPicker: (value?: { boatId: string; seatNumber: number }) => void;
   pickerSearch: string;
   setPickerSearch: (value: string) => void;
+  placedRowerId?: string;
+  onPlaced: (rowerId: string) => void;
   locations: Map<string, string>;
   coachId: string;
   coachName: string;
@@ -46,6 +48,8 @@ export function BoatCard({
   setPicker,
   pickerSearch,
   setPickerSearch,
+  placedRowerId,
+  onPlaced,
   locations,
   coachId,
   coachName,
@@ -257,6 +261,7 @@ export function BoatCard({
             side,
           })
         }
+        placedRowerId={placedRowerId}
         onRemove={(source) =>
           dispatch(
             'cox' in source
@@ -284,6 +289,7 @@ export function BoatCard({
               seatNumber: picker.seatNumber,
               rowerId,
             });
+            onPlaced(rowerId);
             setPicker(undefined);
           }}
           onClose={() => setPicker(undefined)}

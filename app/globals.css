@@ -40,6 +40,21 @@ body {
   }
 }
 
+@keyframes chip-place {
+  from {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 3px rgba(140, 21, 21, 0.25);
+  }
+  to {
+    transform: scale(1);
+    box-shadow: none;
+  }
+}
+
+.chip-placed {
+  animation: chip-place 320ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

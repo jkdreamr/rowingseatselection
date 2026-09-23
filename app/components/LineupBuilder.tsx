@@ -10,7 +10,7 @@ import {
   useSensors,
 } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BoatCard } from './BoatCard';
 import { RosterPanel } from './RosterPanel';
 import { SessionHeader } from './SessionHeader';
@@ -40,6 +40,8 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
   const [menuBoatId, setMenuBoatId] = useState<string>();
   const [copied, setCopied] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState('');
+  const [placedRowerId, setPlacedRowerId] = useState<string>();
+  const placedTimeoutRef = useRef<number>();
   const selectionKey = `rowingseatselection:last:${mode}`;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -112,6 +114,22 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [dispatch]);
+
+  useEffect(
+    () => () => {
+      if (placedTimeoutRef.current) window.clearTimeout(placedTimeoutRef.current);
+    },
+    [],
+  );
+
+  const markPlaced = (rowerId: string) => {
+    setPlacedRowerId(rowerId);
+    if (placedTimeoutRef.current) window.clearTimeout(placedTimeoutRef.current);
+    placedTimeoutRef.current = window.setTimeout(() => {
+      setPlacedRowerId(undefined);
+      placedTimeoutRef.current = undefined;
+    }, 400);
+  };
 
   if (!loaded || !selectionHydrated) {
     return (
@@ -217,6 +235,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
         rowerId: activeData.rowerId,
         source: activeData.source,
       });
+      markPlaced(activeData.rowerId);
     } else if (overParts[0] === 'cox') {
       dispatch({
         type: 'ASSIGN_COX',
@@ -225,6 +244,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
         rowerId: activeData.rowerId,
         source: activeData.source,
       });
+      markPlaced(activeData.rowerId);
     }
   };
   const pasteBoat = () => {
@@ -411,6 +431,8 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
                         setPicker={setPicker}
                         pickerSearch={pickerSearch}
                         setPickerSearch={setPickerSearch}
+                        placedRowerId={placedRowerId}
+                        onPlaced={markPlaced}
                         locations={locations}
                         coachId={coach.id}
                         coachName={coach.name}
@@ -451,7 +473,7 @@ export default function LineupBuilder({ mode = 'session' }: Props) {
           />
         </div>
       </main>
-      <DragOverlay>
+      <DragOverlay dropAnimation={null}>
         {activeDrag ? (
           <div className="rounded-lg border border-cardinal bg-paper px-3 py-2 text-sm">
             {activeDrag.name}
